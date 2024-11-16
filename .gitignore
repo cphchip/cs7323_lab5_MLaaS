@@ -23,6 +23,7 @@ build/
 *.LinkFileList
 *.hmap
 models/
+Images/
 
 # Automatic backup files
 *~.nib/
