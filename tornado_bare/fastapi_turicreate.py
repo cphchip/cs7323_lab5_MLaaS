@@ -122,6 +122,7 @@ provided by the user from their phone. Right now we're just going to try this wi
 local pictures to make sure we're importing and feeding the classifier correctly.
 '''
 from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 from skimage import io, color, transform
 import os
@@ -162,25 +163,79 @@ def create_dataset(img_list, label_list):
 
     return X, y
 
+def train_svc():
+    # Train an SVC
+    svc.fit(X, y)
+
+    print("SVC: Training complete!")
+
+    # Training and Test Accuracy
+    print("Training Accuracy:", svc.score(X, y))
+    return
+
+def predict_svc():
+    print("Predict using SVC")
+    y_pred = svc.predict(X_test)
+    print(y_pred)
+    return
+
+def train_rf():
+    # Train a Random Forest
+    rf.fit(X, y)
+
+    print("RF: Training complete!")
+
+    # Training and Test Accuracy
+    print("Training Accuracy:", rf.score(X, y))
+    return
+
+def predict_rf():
+
+    print("Predict using RF")
+    y_pred = rf.predict(X_test)
+    print(y_pred)
+    return
+
+# Create dataset
 X, y = create_dataset(images[:8],labels)
 
 # Print data shapes
 print("Shape of X:", X.shape)
 print("Shape of y:", y.shape)
 
-# Train an SVC
-svc = SVC()
-svc.fit(X, y)
-
-print("Training complete!")
-
-# Create and predict some test examples
+ # Create some test examples
 X_test, _ = create_dataset(images[8:], []) # no labels for test data
-print(X_test.shape)
+print("X_test shape:", X_test.shape)
 
-y_pred = svc.predict(X_test)
-print(y_pred)
+#Instantiate SVC and RF classifiers
+svc = SVC() # model selection 1
+rf= RandomForestClassifier() # model selection 2
 
+
+selected_model = 2 # select rf
+
+if selected_model == 1 :
+    print("Selected Model: SVC")
+    train_svc()
+    predict_svc()
+else:
+    print("Selected Model: RF")
+    train_rf()
+    predict_rf()
+
+#def train_svc():
+#    # Train an SVC
+#    svc = SVC()
+#    svc.fit(X, y)
+#
+#    print("SVC: Training complete!")
+#
+#    # Create and predict some test examples
+#    X_test, _ = create_dataset(images[8:], []) # no labels for test data
+#    print(X_test.shape)
+#
+#    y_pred = svc.predict(X_test)
+#    print(y_pred)
 
 # #========================================
 # #   Data store objects from pydantic 
