@@ -126,20 +126,19 @@ from sklearn.preprocessing import LabelEncoder
 from skimage import io, color, transform
 import os
 
-
-# Setting up a practice image to work with
-# Read the image as a NumPy array
-
+# Collect images from directories
 images = []
 directories = ['./Images/Dog', './Images/Not Dog', './Images/Test']
 
 for dir in directories:
-    for img in os.listdir(dir):
+    # first 4 images are my dog, second 4 other stuff, final two have one dog and one other
+    for img in os.listdir(dir): 
         if img.endswith('.jpg'):
             image = io.imread(os.path.join(dir, img))
             images.append(image)
         else:
             exit
+
 
 positive_label = 'dog' # whatever user tells us it is
 negative_label = 'other' # not dog, basically
@@ -151,23 +150,23 @@ def create_dataset(img_list, label_list):
     # Handle the image data and prepare for training
     h, w = 224, 224
 
-    g_img = [color.rgb2gray(x) for x in img_list]
-    resize_img = [transform.resize(img, (h,w), anti_aliasing=True) for img in g_img]
+    g_img = [color.rgb2gray(x) for x in img_list] # convert to grayscale
+    resize_img = [transform.resize(img, (h,w), anti_aliasing=True) for img in g_img] # resize
 
+    # SVC expects a flat numpy array
     X = np.array([img.flatten() for img in resize_img])
 
     # Handle the label data and get it ready to train  
     le = LabelEncoder()
-    y = le.fit_transform(label_list)
+    y = le.fit_transform(label_list) # dog: 0, not dog: 1
 
     return X, y
 
 X, y = create_dataset(images[:8],labels)
-print(y)
 
 # Print data shapes
-print("Shape of X:", X.shape)  # Should be (n_samples, 50176)
-print("Shape of y:", y.shape)  # Should be (n_samples,)
+print("Shape of X:", X.shape)
+print("Shape of y:", y.shape)
 
 # Train an SVC
 svc = SVC()
@@ -175,12 +174,13 @@ svc.fit(X, y)
 
 print("Training complete!")
 
-X_test, _ = create_dataset(images[8:], [])
+# Create and predict some test examples
+X_test, _ = create_dataset(images[8:], []) # no labels for test data
 print(X_test.shape)
 
 y_pred = svc.predict(X_test)
-
 print(y_pred)
+
 
 # #========================================
 # #   Data store objects from pydantic 
