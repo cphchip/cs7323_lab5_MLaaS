@@ -23,7 +23,7 @@ build/
 *.LinkFileList
 *.hmap
 models/
-tornado_bare/Images/
+*.jpg
 
 # Automatic backup files
 *~.nib/
