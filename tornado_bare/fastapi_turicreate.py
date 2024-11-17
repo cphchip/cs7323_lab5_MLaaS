@@ -145,9 +145,22 @@ for dir in directories:
 
 positive_label = 'dog' # whatever user tells us it is
 negative_label = 'other' # not dog, basically
-labels = [positive_label] * 4 + [negative_label] * 4
+labels = ([positive_label] * 4 
+          + [negative_label] * 4
+          + [negative_label] # test photo 1 
+          + [positive_label]) # test photo 2
 
-'''
+
+# Function to augment images by rotation
+def augment_images_with_rotation(images, angles=[90, 180, 270]):
+    augmented_images = []
+    for img in images:
+        for angle in angles:
+            rotated_image = transform.rotate(img, angle)
+            augmented_images.append(rotated_image)
+    return augmented_images
+
+
 def create_dataset(img_list, label_list):
 
     # Handle the image data and prepare for training
@@ -164,8 +177,10 @@ def create_dataset(img_list, label_list):
     y = le.fit_transform(label_list) # dog: 0, not dog: 1
 
     return X, y
-'''
 
+
+
+'''
 def create_dataset_with_hog(img_list, label_list=None): # code from Chat-GPT
     pixels_per_cell = (4, 4) # higher values capture more global patterns (i.e. (16,16))
     cells_per_block = (2, 2) # higher values less sensitive to fine-grained features
@@ -194,8 +209,10 @@ def create_dataset_with_hog(img_list, label_list=None): # code from Chat-GPT
         return X, y
     else:
         return X, None
+'''
 
-# Bonus function to visualize the image dataset
+
+# Utility function to visualize the image dataset
 def visualize_images(img_list, label_list, num_images=8):
     h, w = 224, 224  # Dimensions used for resizing
     g_img = [color.rgb2gray(x) for x in img_list]
@@ -204,7 +221,7 @@ def visualize_images(img_list, label_list, num_images=8):
     # Plot the images
     plt.figure(figsize=(12, 6))
     for i in range(num_images):
-        plt.subplot(2, 4, i + 1)  # Adjust grid size for visualization
+        plt.subplot(2, 5, i + 1)  # Adjust grid size for visualization
         plt.imshow(resize_img[i], cmap='gray')
         plt.title(f"Label: {label_list[i]}")
         plt.axis('off')
@@ -212,23 +229,27 @@ def visualize_images(img_list, label_list, num_images=8):
     plt.show()
 
 
-visualize_images(images[:8], labels) # show the images
-# X, y = create_dataset(images[:8],labels)
-X, y = create_dataset_with_hog(images[:8],labels)
+# visualize_images(images[:8], labels) # show the images
+X_train, y_train = create_dataset(images[:8],labels[:8])
+X_test, y_test = create_dataset(images[8:], labels[8:])
+# X, y = create_dataset_with_hog(images[:8],labels)
+visualize_images(images, labels, 10) # show the images
+
 
 # Print data shapes
-print("Shape of X:", X.shape)
-print("Shape of y:", y.shape)
+# print("Shape of X:", X.shape)
+# print("Shape of y:", y.shape)
 
 # Train an SVC
 svc = SVC()
-svc.fit(X, y)
+svc.fit(X_train, y_train)
 
 print("Training complete!")
 
 # Create and predict some test examples
-X_test, _ = create_dataset_with_hog(images[8:], []) # no labels for test data
-print(X_test.shape)
+# X_test, _ = create_dataset_with_hog(images[8:], []) # no labels for test data
+# X_test, _ = create_dataset(images[8:], []) # no labels for test data
+# print(X_test.shape)
 
 y_pred = svc.predict(X_test)
 print("Predictions:", y_pred)
