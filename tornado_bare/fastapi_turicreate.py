@@ -124,6 +124,9 @@ local pictures to make sure we're importing and feeding the classifier correctly
 from sklearn.svm import SVC
 from sklearn.preprocessing import LabelEncoder
 from skimage import io, color, transform
+from skimage.feature import hog
+from sklearn.metrics import accuracy_score
+import matplotlib.pyplot as plt
 import os
 
 # Collect images from directories
@@ -144,7 +147,7 @@ positive_label = 'dog' # whatever user tells us it is
 negative_label = 'other' # not dog, basically
 labels = [positive_label] * 4 + [negative_label] * 4
 
-
+'''
 def create_dataset(img_list, label_list):
 
     # Handle the image data and prepare for training
@@ -161,8 +164,57 @@ def create_dataset(img_list, label_list):
     y = le.fit_transform(label_list) # dog: 0, not dog: 1
 
     return X, y
+'''
 
-X, y = create_dataset(images[:8],labels)
+def create_dataset_with_hog(img_list, label_list=None): # code from Chat-GPT
+    pixels_per_cell = (4, 4) # higher values capture more global patterns (i.e. (16,16))
+    cells_per_block = (2, 2) # higher values less sensitive to fine-grained features
+    orientations = 9
+
+    # Convert to grayscale and extract HOG features
+    h, w = 224, 224
+    g_img = [color.rgb2gray(x) for x in img_list]  # Convert to grayscale
+    resize_img = [transform.resize(img, (h, w), anti_aliasing=True) for img in g_img]  # Resize images
+
+    # Extract HOG features for each image
+    hog_features = [hog(img, 
+                         orientations=orientations, 
+                         pixels_per_cell=pixels_per_cell, 
+                         cells_per_block=cells_per_block, 
+                         block_norm='L2-Hys') 
+                    for img in resize_img]
+
+    # Convert HOG features to numpy array
+    X = np.array(hog_features)
+
+    # If labels are provided, encode them
+    if label_list is not None:
+        le = LabelEncoder()
+        y = le.fit_transform(label_list)  # dog: 0, not dog: 1
+        return X, y
+    else:
+        return X, None
+
+# Bonus function to visualize the image dataset
+def visualize_images(img_list, label_list, num_images=8):
+    h, w = 224, 224  # Dimensions used for resizing
+    g_img = [color.rgb2gray(x) for x in img_list]
+    resize_img = [transform.resize(img, (h, w), anti_aliasing=True) for img in g_img]
+    
+    # Plot the images
+    plt.figure(figsize=(12, 6))
+    for i in range(num_images):
+        plt.subplot(2, 4, i + 1)  # Adjust grid size for visualization
+        plt.imshow(resize_img[i], cmap='gray')
+        plt.title(f"Label: {label_list[i]}")
+        plt.axis('off')
+    plt.tight_layout()
+    plt.show()
+
+
+visualize_images(images[:8], labels) # show the images
+# X, y = create_dataset(images[:8],labels)
+X, y = create_dataset_with_hog(images[:8],labels)
 
 # Print data shapes
 print("Shape of X:", X.shape)
@@ -175,11 +227,12 @@ svc.fit(X, y)
 print("Training complete!")
 
 # Create and predict some test examples
-X_test, _ = create_dataset(images[8:], []) # no labels for test data
+X_test, _ = create_dataset_with_hog(images[8:], []) # no labels for test data
 print(X_test.shape)
 
 y_pred = svc.predict(X_test)
-print(y_pred)
+print("Predictions:", y_pred)
+
 
 
 # #========================================
