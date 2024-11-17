@@ -125,6 +125,8 @@ from sklearn.svm import SVC
 from sklearn.preprocessing import LabelEncoder
 from skimage import io, color, transform
 from skimage.feature import hog
+from skimage.util import random_noise
+from skimage.exposure import adjust_gamma
 from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
 import os
@@ -142,52 +144,53 @@ for dir in directories:
         else:
             exit
 
-
 positive_label = 'dog' # whatever user tells us it is
 negative_label = 'other' # not dog, basically
 labels = ([positive_label] * 4 
           + [negative_label] * 4
-          + [negative_label] # test photo 1 
-          + [positive_label]) # test photo 2
+          + [positive_label] # test photo 1 
+          + [negative_label]) # test photo 2
 
 
-# Function to augment images by rotation
-def augment_images_with_rotation(images, angles=[90, 180, 270]):
+def augment_images(images, labels):
     augmented_images = []
-    for img in images:
-        for angle in angles:
-            rotated_image = transform.rotate(img, angle)
-            augmented_images.append(rotated_image)
-    return augmented_images
+    augmented_labels = []
+    for img, label in zip(images, labels):
+        augmented_images.append(img)  # Original image
+        augmented_labels.append(label)
+
+        # Rotations
+        for angle in [90, 180, 270]:
+            rotated_img = transform.rotate(img, angle)
+            augmented_images.append(rotated_img)
+            augmented_labels.append(label)
+
+        # Flipping
+        flipped_img = img[:, ::-1]
+        augmented_images.append(flipped_img)
+        augmented_labels.append(label)
+
+        # Add noise
+        noisy_img = random_noise(img, mode='gaussian', var=0.01)
+        augmented_images.append(noisy_img)
+        augmented_labels.append(label)
+
+        # Adjust brightness
+        brighter_img = adjust_gamma(img, gamma=0.5)
+        darker_img = adjust_gamma(img, gamma=2.0)
+        augmented_images.extend([brighter_img, darker_img])
+        augmented_labels.extend([label, label])
+
+    return augmented_images, augmented_labels
 
 
-def create_dataset(img_list, label_list):
-
-    # Handle the image data and prepare for training
-    h, w = 224, 224
-
-    g_img = [color.rgb2gray(x) for x in img_list] # convert to grayscale
-    resize_img = [transform.resize(img, (h,w), anti_aliasing=True) for img in g_img] # resize
-
-    # SVC expects a flat numpy array
-    X = np.array([img.flatten() for img in resize_img])
-
-    # Handle the label data and get it ready to train  
-    le = LabelEncoder()
-    y = le.fit_transform(label_list) # dog: 0, not dog: 1
-
-    return X, y
-
-
-
-'''
 def create_dataset_with_hog(img_list, label_list=None): # code from Chat-GPT
     pixels_per_cell = (4, 4) # higher values capture more global patterns (i.e. (16,16))
     cells_per_block = (2, 2) # higher values less sensitive to fine-grained features
     orientations = 9
 
     # Convert to grayscale and extract HOG features
-    h, w = 224, 224
+    h, w = 128, 128
     g_img = [color.rgb2gray(x) for x in img_list]  # Convert to grayscale
     resize_img = [transform.resize(img, (h, w), anti_aliasing=True) for img in g_img]  # Resize images
 
@@ -203,42 +206,21 @@ def create_dataset_with_hog(img_list, label_list=None): # code from Chat-GPT
     X = np.array(hog_features)
 
     # If labels are provided, encode them
-    if label_list is not None:
-        le = LabelEncoder()
-        y = le.fit_transform(label_list)  # dog: 0, not dog: 1
-        return X, y
-    else:
-        return X, None
-'''
 
+    le = LabelEncoder()
+    y = le.fit_transform(label_list)  # dog: 0, not dog: 1
 
-# Utility function to visualize the image dataset
-def visualize_images(img_list, label_list, num_images=8):
-    h, w = 224, 224  # Dimensions used for resizing
-    g_img = [color.rgb2gray(x) for x in img_list]
-    resize_img = [transform.resize(img, (h, w), anti_aliasing=True) for img in g_img]
-    
-    # Plot the images
-    plt.figure(figsize=(12, 6))
-    for i in range(num_images):
-        plt.subplot(2, 5, i + 1)  # Adjust grid size for visualization
-        plt.imshow(resize_img[i], cmap='gray')
-        plt.title(f"Label: {label_list[i]}")
-        plt.axis('off')
-    plt.tight_layout()
-    plt.show()
+    return X, y
 
-
-# visualize_images(images[:8], labels) # show the images
-X_train, y_train = create_dataset(images[:8],labels[:8])
-X_test, y_test = create_dataset(images[8:], labels[8:])
-# X, y = create_dataset_with_hog(images[:8],labels)
-visualize_images(images, labels, 10) # show the images
-
+augmented_images, augmented_labels = augment_images(images[:8], labels[:8])
+X_train, y_train = create_dataset_with_hog(augmented_images,augmented_labels)
+X_test, y_test = create_dataset_with_hog(images[8:], labels[8:])
 
 # Print data shapes
-# print("Shape of X:", X.shape)
-# print("Shape of y:", y.shape)
+print("Shape of X_train:", X_train.shape)
+print("Shape of y_train:", y_train.shape)
+print("Shape of X_test:", X_test.shape)
+print("Shape of y_test:", y_test.shape)
 
 # Train an SVC
 svc = SVC()
@@ -246,15 +228,36 @@ svc.fit(X_train, y_train)
 
 print("Training complete!")
 
-# Create and predict some test examples
-# X_test, _ = create_dataset_with_hog(images[8:], []) # no labels for test data
-# X_test, _ = create_dataset(images[8:], []) # no labels for test data
-# print(X_test.shape)
-
 y_pred = svc.predict(X_test)
 print("Predictions:", y_pred)
 
+# Calculate accuracy
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy: {accuracy:.2f}")
 
+
+# def visualize_test_images(images, labels, images_per_row=4):
+#     """
+#     Visualizes the test images in a grid, with labels.
+#     """
+#     h, w = 128, 128  # Resize dimensions
+#     grayscale_images = [color.rgb2gray(img) for img in images]  # Convert to grayscale
+#     resized_images = [transform.resize(img, (h, w), anti_aliasing=True) for img in grayscale_images]
+
+#     num_images = len(resized_images)
+#     rows = (num_images + images_per_row - 1) // images_per_row  # Calculate rows needed
+
+#     plt.figure(figsize=(images_per_row * 2, rows * 2))  # Dynamically adjust figure size
+#     for i, img in enumerate(resized_images):
+#         plt.subplot(rows, images_per_row, i + 1)
+#         plt.imshow(img, cmap='gray')
+#         plt.title(f"Label: {labels[i]}")
+#         plt.axis('off')
+#     plt.tight_layout()
+#     plt.show()
+
+# # Visualize the test images
+# visualize_test_images(images[8:], labels[8:], images_per_row=4)
 
 # #========================================
 # #   Data store objects from pydantic 
