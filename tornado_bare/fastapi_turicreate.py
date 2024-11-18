@@ -128,6 +128,7 @@ from skimage.feature import hog
 from skimage.util import random_noise
 from skimage.exposure import adjust_gamma
 from sklearn.metrics import accuracy_score
+from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import os
 
@@ -146,10 +147,14 @@ for dir in directories:
 
 positive_label = 'dog' # whatever user tells us it is
 negative_label = 'other' # not dog, basically
-labels = ([positive_label] * 4 
-          + [negative_label] * 4
+labels = ([positive_label] * 5 
+          + [negative_label] * 5
           + [positive_label] # test photo 1 
-          + [negative_label]) # test photo 2
+          + [positive_label] # test photo 2
+          + [negative_label]
+          + [negative_label]
+          + [positive_label])
+
 
 
 def augment_images(images, labels):
@@ -170,10 +175,10 @@ def augment_images(images, labels):
         augmented_images.append(flipped_img)
         augmented_labels.append(label)
 
-        # Add noise
-        noisy_img = random_noise(img, mode='gaussian', var=0.01)
-        augmented_images.append(noisy_img)
-        augmented_labels.append(label)
+        # # Add noise
+        # noisy_img = random_noise(img, mode='gaussian', var=0.01)
+        # augmented_images.append(noisy_img)
+        # augmented_labels.append(label)
 
         # Adjust brightness
         brighter_img = adjust_gamma(img, gamma=0.5)
@@ -182,6 +187,16 @@ def augment_images(images, labels):
         augmented_labels.extend([label, label])
 
     return augmented_images, augmented_labels
+
+
+# Apply PCA to reduce dimensionality
+def apply_pca(X_train, X_test, explained_variance=0.95):
+    pca = PCA(n_components=explained_variance)  # Retain 95% of variance
+    X_train_pca = pca.fit_transform(X_train)    # Fit and transform on training data
+    X_test_pca = pca.transform(X_test)          # Transform test data
+    print(f"Original number of features: {X_train.shape[1]}")
+    print(f"Reduced number of features: {X_train_pca.shape[1]}")
+    return X_train_pca, X_test_pca
 
 
 def create_dataset_with_hog(img_list, label_list=None): # code from Chat-GPT
@@ -214,21 +229,23 @@ def create_dataset_with_hog(img_list, label_list=None): # code from Chat-GPT
 
 augmented_images, augmented_labels = augment_images(images[:8], labels[:8])
 X_train, y_train = create_dataset_with_hog(augmented_images,augmented_labels)
-X_test, y_test = create_dataset_with_hog(images[8:], labels[8:])
+X_test, y_test = create_dataset_with_hog(images[10:], labels[10:])
+
+X_train_pca, X_test_pca = apply_pca(X_train, X_test)
 
 # Print data shapes
-print("Shape of X_train:", X_train.shape)
+print("Shape of X_train:", X_train_pca.shape)
 print("Shape of y_train:", y_train.shape)
-print("Shape of X_test:", X_test.shape)
+print("Shape of X_test:", X_test_pca.shape)
 print("Shape of y_test:", y_test.shape)
 
 # Train an SVC
 svc = SVC()
-svc.fit(X_train, y_train)
+svc.fit(X_train_pca, y_train)
 
 print("Training complete!")
 
-y_pred = svc.predict(X_test)
+y_pred = svc.predict(X_test_pca)
 print("Predictions:", y_pred)
 
 # Calculate accuracy
@@ -236,28 +253,30 @@ accuracy = accuracy_score(y_test, y_pred)
 print(f"Accuracy: {accuracy:.2f}")
 
 
-# def visualize_test_images(images, labels, images_per_row=4):
-#     """
-#     Visualizes the test images in a grid, with labels.
-#     """
-#     h, w = 128, 128  # Resize dimensions
-#     grayscale_images = [color.rgb2gray(img) for img in images]  # Convert to grayscale
-#     resized_images = [transform.resize(img, (h, w), anti_aliasing=True) for img in grayscale_images]
+def visualize_test_images(images, labels, images_per_row=4):
+    """
+    Visualizes the test images in a grid, with labels.
+    """
+    h, w = 128, 128  # Resize dimensions
+    grayscale_images = [color.rgb2gray(img) for img in images]  # Convert to grayscale
+    resized_images = [transform.resize(img, (h, w), anti_aliasing=True) for img in grayscale_images]
 
-#     num_images = len(resized_images)
-#     rows = (num_images + images_per_row - 1) // images_per_row  # Calculate rows needed
+    num_images = len(resized_images)
+    rows = (num_images + images_per_row - 1) // images_per_row  # Calculate rows needed
 
-#     plt.figure(figsize=(images_per_row * 2, rows * 2))  # Dynamically adjust figure size
-#     for i, img in enumerate(resized_images):
-#         plt.subplot(rows, images_per_row, i + 1)
-#         plt.imshow(img, cmap='gray')
-#         plt.title(f"Label: {labels[i]}")
-#         plt.axis('off')
-#     plt.tight_layout()
-#     plt.show()
+    plt.figure(figsize=(images_per_row * 2, rows * 2))  # Dynamically adjust figure size
+    for i, img in enumerate(resized_images):
+        plt.subplot(rows, images_per_row, i + 1)
+        plt.imshow(img, cmap='gray')
+        plt.title(f"Label: {labels[i]}")
+        plt.axis('off')
+    plt.tight_layout()
+    plt.show()
 
-# # Visualize the test images
-# visualize_test_images(images[8:], labels[8:], images_per_row=4)
+# Visualize the test images
+visualize_test_images(images[10:], labels[10:], images_per_row=5)
+
+visualize_test_images(images[:10], labels[:10], images_per_row=5)
 
 # #========================================
 # #   Data store objects from pydantic 
