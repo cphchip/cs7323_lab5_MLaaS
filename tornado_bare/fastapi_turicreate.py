@@ -238,7 +238,7 @@ X_pred_hog = extract_hog_features(X_predict_images)
 
 # Train the Random Forest model
 #model = SVC(kernel='rbf', C=1, gamma='scale', random_state=42)
-model = RandomForestClassifier(n_estimators=500, max_depth=50, random_state=42)
+model = RandomForestClassifier(n_estimators=100, max_depth=10, random_state=42)
 model.fit(X_train_hog, y_train)
 
 # Test the model
