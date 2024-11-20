@@ -277,9 +277,9 @@ def visualize_test_images(images, labels, images_per_row=4):
     plt.show()
 
 # Visualize the test images
-visualize_test_images(images[10:], labels[10:], images_per_row=5)
+visualize_test_images(train_images, train_labels, images_per_row=5)
 
-visualize_test_images(images[:10], labels[:10], images_per_row=5)
+visualize_test_images(test_images, test_labels, images_per_row=5)
 
 # #========================================
 # #   Data store objects from pydantic 
