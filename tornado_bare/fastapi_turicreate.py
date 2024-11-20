@@ -122,6 +122,7 @@ provided by the user from their phone. Right now we're just going to try this wi
 local pictures to make sure we're importing and feeding the classifier correctly.
 '''
 from sklearn.svm import SVC
+import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from skimage import io, color, transform
 from skimage.feature import hog
@@ -132,29 +133,31 @@ from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import os
 
-# Collect images from directories
-images = []
-directories = ['./Images/Dog', './Images/Not Dog', './Images/Test']
+# New Image and lable collection method
+# Load the CSV file
+csv_file = "./Images/labels.csv"
+data = pd.read_csv(csv_file)
 
-for dir in directories:
-    # first 4 images are my dog, second 4 other stuff, final two have one dog and one other
-    for img in os.listdir(dir): 
-        if img.endswith('.jpg'):
-            image = io.imread(os.path.join(dir, img))
-            images.append(image)
-        else:
-            exit
+# Parameters
+img_size = (128, 128)
 
-positive_label = 'dog' # whatever user tells us it is
-negative_label = 'other' # not dog, basically
-labels = ([positive_label] * 5 
-          + [negative_label] * 5
-          + [positive_label] # test photo 1 
-          + [positive_label] # test photo 2
-          + [negative_label]
-          + [negative_label]
-          + [positive_label])
+# Load images and labels
+def load_data(data):
+    images = []
+    labels = []
+    for _, row in data.iterrows():
+        image = io.imread(row['Filename'])
+        image = transform.resize(image, img_size, anti_aliasing=True)  # Resize image
+        images.append(image)
+        labels.append(row['Label'])
+    return images, labels
 
+# Split data into training and test sets
+train_data = data[~data['Filename'].str.contains("Test")]
+test_data = data[data['Filename'].str.contains("Test")]
+
+train_images, train_labels = load_data(train_data)
+test_images, test_labels = load_data(test_data)
 
 
 def augment_images(images, labels):
@@ -176,9 +179,9 @@ def augment_images(images, labels):
         augmented_labels.append(label)
 
         # # Add noise
-        # noisy_img = random_noise(img, mode='gaussian', var=0.01)
-        # augmented_images.append(noisy_img)
-        # augmented_labels.append(label)
+        noisy_img = random_noise(img, mode='gaussian', var=0.01)
+        augmented_images.append(noisy_img)
+        augmented_labels.append(label)
 
         # Adjust brightness
         brighter_img = adjust_gamma(img, gamma=0.5)
@@ -227,9 +230,9 @@ def create_dataset_with_hog(img_list, label_list=None): # code from Chat-GPT
 
     return X, y
 
-augmented_images, augmented_labels = augment_images(images[:8], labels[:8])
+augmented_images, augmented_labels = augment_images(train_images, train_labels)
 X_train, y_train = create_dataset_with_hog(augmented_images,augmented_labels)
-X_test, y_test = create_dataset_with_hog(images[10:], labels[10:])
+X_test, y_test = create_dataset_with_hog(test_images, test_labels)
 
 X_train_pca, X_test_pca = apply_pca(X_train, X_test)
 
