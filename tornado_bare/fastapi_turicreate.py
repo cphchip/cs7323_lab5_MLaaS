@@ -153,8 +153,8 @@ def load_data(data):
     return images, labels
 
 # Split data into training and test sets
-train_data = data[~data['Filename'].str.contains("Test")]
-test_data = data[data['Filename'].str.contains("Test")]
+train_data = data[~data['Filename'].str.contains("Test")] # Filepaths not containing "Test"
+test_data = data[data['Filename'].str.contains("Test")] # Filepaths containing "Test"
 
 train_images, train_labels = load_data(train_data)
 test_images, test_labels = load_data(test_data)
