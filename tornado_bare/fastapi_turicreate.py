@@ -113,6 +113,307 @@ import matplotlib.pyplot as plt
 # PyObjectId = Annotated[str, BeforeValidator(str)]
 
 
+#===================================================================================================
+#   From ChatGPT - train and predict a dog in images
+#
+# This section of code was generated with the assistance of ChatGPT, an AI language model by OpenAI.
+# Date: 11/18/24
+# Source: OpenAI's ChatGPT (https://openai.com/chatgpt)
+# Modifications: added remove of ".DS_Store" folders created by MacOs. 
+#                Also added check to only read in "".jpg" files 
+#
+#
+# TODO:  In Documentation or a README File
+# If you're documenting the project or including external acknowledgments, you can add a note like this:
+#
+# Acknowledgment:
+# Portions of this code were generated with the assistance of ChatGPT, an AI language model developed by OpenAI. 
+# The generated code was reviewed, modified, and integrated into the project to meet specific requirements.
+#--------------------------------------------------------------------------------------------------
+import os
+from pathlib import Path
+from PIL import Image
+import numpy as np
+from skimage.feature import hog
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
+from sklearn.model_selection import train_test_split
+import joblib
+
+
+
+
+def load_images_from_folder(folder_path, image_size=(64, 64)):
+    """
+    Load images from folder and return as a list of numpy arrays with labels.
+    
+    Args:
+    - folder_path (str): Path to the data folder (e.g., Train or Test).
+    - image_size (tuple): Resize all images to this size.
+    
+    Returns:
+    - images (list): List of image arrays.
+    - labels (list): Corresponding class labels.
+    """
+    images = []
+    labels = []
+    for class_folder in os.listdir(folder_path):
+        class_path = os.path.join(folder_path, class_folder)
+        print("class folder = ",class_folder)
+        if class_folder == ".DS_Store":
+            try:
+                os.remove(class_folder)  # Delete the .DS_Store file
+                print(f"Removed: {class_folder}")
+            except Exception as e:
+                print(f"Error removing {class_folder}: {e}")
+            continue
+        else:
+            if os.path.isdir(class_path):  # Check if it is a folder
+                for img_file in os.listdir(class_path):
+                    if img_file.endswith('.jpg'):
+                        img_path = os.path.join(class_path, img_file)
+                        try:
+                            img = Image.open(img_path).convert('RGB')  # Ensure RGB mode
+                            img = img.resize(image_size)  # Resize image
+                            images.append(np.array(img))
+                            labels.append(class_folder)  # Use folder name as label
+                        except Exception as e:
+                            print(f"Error loading image {img_path}: {e}")
+            
+    return np.array(images), np.array(labels)
+
+def extract_hog_features(images, pixels_per_cell=(8, 8), cells_per_block=(2, 2), orientations=9):
+    """
+    Extract HOG features for a list of images.
+    
+    Args:
+    - images (numpy array): Array of images (e.g., RGB or grayscale).
+    - pixels_per_cell (tuple): Size of the cell for HOG.
+    - cells_per_block (tuple): Number of cells per block for HOG.
+    - orientations (int): Number of orientation bins for HOG.
+    
+    Returns:
+    - features (numpy array): Array of HOG feature vectors.
+    """
+    features = []
+    for img in images:
+        # If the image is in RGB, convert it to grayscale
+        if len(img.shape) == 3:
+            img = np.mean(img, axis=2)  # Simple grayscale conversion
+        # Extract HOG features
+        hog_features = hog(img, 
+                           pixels_per_cell=pixels_per_cell,
+                           cells_per_block=cells_per_block,
+                           orientations=orientations,
+                           block_norm='L2-Hys',  # Normalize blocks
+                           feature_vector=True)
+        features.append(hog_features)
+    return np.array(features)
+
+
+
+# Paths to training and testing folders
+train_folder = "./Images/train"
+test_folder = "./Images/test"
+predict_folder = "./Images/predict"
+
+# Load images and labels
+image_size = (64, 64)  # Resize images to 64x64
+X_train_images, y_train_labels = load_images_from_folder(train_folder, image_size)
+X_test_images, y_test_labels = load_images_from_folder(test_folder, image_size)
+X_predict_images, y_predict_labels = load_images_from_folder(predict_folder, image_size)
+
+# Encode labels
+le = LabelEncoder()
+y_train = le.fit_transform(y_train_labels)
+y_test = le.transform(y_test_labels)
+y_predict_test = le.transform(y_predict_labels)
+
+# Extract HOG features
+X_train_hog = extract_hog_features(X_train_images)
+X_test_hog = extract_hog_features(X_test_images)
+X_pred_hog = extract_hog_features(X_predict_images)
+
+# Train the Random Forest model
+#model = SVC(kernel='rbf', C=1, gamma='scale', random_state=42)
+model = RandomForestClassifier(n_estimators=500, max_depth=50, random_state=42)
+model.fit(X_train_hog, y_train)
+
+# Test the model
+y_pred = model.predict(X_test_hog)
+
+
+# Evaluate the model
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Test Accuracy: {accuracy:.2f}")
+
+print("Classification Report:")
+print(classification_report(y_test, y_pred, target_names=le.classes_))
+
+print("Confusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+
+
+# Test the predition
+y_pred_test = model.predict(X_pred_hog)
+print(y_pred_test)
+
+#========================================
+#   Practice image import
+#----------------------------------------
+'''
+We need to set things up so that we expect to receive a numpy array for each image
+provided by the user from their phone. Right now we're just going to try this with 
+local pictures to make sure we're importing and feeding the classifier correctly.
+'''
+
+
+'''
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import LabelEncoder
+from skimage import io, color, transform
+from skimage.feature import hog
+import os
+
+# Create Training/Test image sets - Collect images from directories
+train_images = []
+test_images = []
+
+train_directories = ['./Images/Dog', './Images/Not Dog'] # images from kaggle
+test_directories = ['./Images/Test']
+
+for dir in train_directories:
+    for img in os.listdir(dir): 
+        if img.endswith('.jpg'):
+            image = io.imread(os.path.join(dir, img))
+            train_images.append(image)
+        else:
+            exit
+
+
+#positive_label = 'dog' # whatever user tells us it is
+#negative_label = 'other' # not dog, basically
+positive_label = 1 # whatever user tells us it is
+negative_label = 0 # not dog, basically
+#labels = [positive_label] * 4 + [negative_label] * 4
+train_labels = [positive_label,positive_label,positive_label,positive_label,positive_label,positive_label,
+                positive_label,positive_label,positive_label,positive_label,positive_label,positive_label,
+                negative_label,negative_label,negative_label,negative_label,negative_label,negative_label,
+                negative_label,negative_label,negative_label,negative_label,negative_label,negative_label]
+
+# Create Test images set - Collect images from Test directory
+for dir in test_directories:
+    for img in os.listdir(dir): 
+        if img.endswith('.jpg'):
+            test_image = io.imread(os.path.join(dir, img))
+            test_images.append(test_image)
+        else:
+            exit
+
+def create_dataset(img_list, label_list):
+
+    # Handle the image data and prepare for training
+    #h, w = 224, 224
+    h, w = 128, 128
+
+    g_img = [color.rgb2gray(x) for x in img_list] # convert to grayscale
+    resize_img = [transform.resize(img, (h,w), anti_aliasing=True) for img in g_img] # resize
+
+    # SVC and RF expects a flat numpy array
+    #X = np.array([img.flatten() for img in resize_img])
+
+    # Extract HOG (Histogram of Oriented Gradients - from ChatGPT (CITE REF) )
+    hog_img = [hog(img, orientations=9, pixels_per_cell=(4, 4), cells_per_block=(2, 2), block_norm='L2-Hys')
+               for img in resize_img]
+    
+    X = np.array(hog_img)
+
+    # Handle the label data and get it ready to train  
+    le = LabelEncoder()
+    y = le.fit_transform(label_list) # dog: 0, not dog: 1
+    return X, y
+
+def train_svc(X_tr,y_lbl):
+    # Train an SVC
+    svc.fit(X_tr, y_lbl)
+
+    print("SVC: Training complete!")
+
+    # Training and Test Accuracy
+    print("Training Accuracy:", svc.score(X_tr, y_lbl))
+    return
+
+def predict_svc(X_tst):
+    print("Predict using SVC")
+    y_pred = svc.predict(X_tst)
+    print(y_pred)
+    return
+
+def train_rf(X_tr,y_lbl):
+   # print("train_rf: type-X_tr",type(X_tr))
+   # print("train_rf: len-X_tr",len(X_tr))
+   # print([len(x) for x in X_tr])
+
+    # Train a Random Forest
+    rf.fit(X_tr, y_lbl)
+
+    print("RF: Training complete!")
+
+    # Training and Test Accuracy
+    print("Training Accuracy:", rf.score(X_tr, y_lbl))
+    return
+
+def predict_rf(X_tst):
+
+    print("Predict using RF")
+    y_pred = rf.predict(X_tst)
+    print(y_pred)
+    return
+
+# Create training dataset
+#X, y = create_dataset(train_images[:8],train_labels)
+X, y = create_dataset(train_images[:24],train_labels)
+
+# Print data shapes
+print("Shape of X:", X.shape)
+print("Shape of y:", y.shape)
+
+ # Create some test examples
+#X_test, _ = create_dataset(test_images[8:], []) # no labels for test data
+X_test, _ = create_dataset(test_images, []) # no labels for test data
+print("X_test shape:", X_test.shape)
+
+#Instantiate SVC and RF classifiers
+svc = SVC() # model selection 1
+rf= RandomForestClassifier()  # model selection 2
+#rf= RandomForestClassifier(  # model selection 2
+#    n_estimators=100,
+#    max_depth=10,
+#    min_samples_split=5,
+#    min_samples_leaf=2,
+#    max_features='sqrt',
+#    bootstrap=True,
+#    random_state=42
+#) 
+
+selected_model = int(input("Input Model to use (1-SVC, 2-RF)")) 
+
+# selected_model = 1 # select svc
+
+if selected_model == 1 :
+    print("Selected Model: SVC")
+    train_svc(X,y)
+    predict_svc(X_test)
+else:
+    print("Selected Model: RF")
+    train_rf(X,y)
+    predict_rf(X_test)
+
+'''
+
 # #========================================
 # #   Data store objects from pydantic 
 # #----------------------------------------
