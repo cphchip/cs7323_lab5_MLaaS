@@ -86,7 +86,7 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
         setupCamera()
         
         // Additional setup for UI elements
-        setupCapturedImageView()
+        // TODO: SET with Storybrd setupCapturedImageView()
 
         // create reusable animation
         //animation.timingFunction = CAMediaTimingFunction(name: //CAMediaTimingFunctionName.easeInEaseOut)
@@ -139,19 +139,23 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
         captureSession.startRunning()
     }
     
-    func setupCapturedImageView() {
-        // Configure the image view to display captured images
-        capturedImageView = UIImageView(frame: CGRect(x: 20, y: 20, width: view.frame.width - 40, height: 300))
-        capturedImageView.contentMode = .scaleAspectFit
-        capturedImageView.isHidden = true
-        view.addSubview(capturedImageView)
-    }
+//    func setupCapturedImageView() {
+//        // Configure the image view to display captured images
+//        capturedImageView = UIImageView(frame: CGRect(x: 20, y: 20, width: view.frame.width - 40, height: 300))
+//        capturedImageView.contentMode = .scaleAspectFit
+//        capturedImageView.isHidden = true
+//        view.addSubview(capturedImageView)
+//    }
     
     //TODO: Add IBAction for the capture button
 //        @IBAction func capturePhotoButtonTapped(_ sender: UIButton) {
 //            capturePhoto()
 //        }
-  
+    @IBAction func capturePhotoButtonTapped(_ sender: UIButton) {
+        capturePhoto()
+    }
+    
+    
     func capturePhoto() {
         let settings = AVCapturePhotoSettings()
         photoOutput.capturePhoto(with: settings, delegate: self)
