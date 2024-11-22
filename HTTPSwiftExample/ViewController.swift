@@ -39,7 +39,7 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
     var captureSession: AVCaptureSession!
     var photoOutput: AVCapturePhotoOutput!
     var previewLayer: AVCaptureVideoPreviewLayer!
-    var capturedImageView: UIImageView!
+    //var capturedImageView: UIImageView!
 
 
     // state variables
@@ -55,7 +55,8 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
     //@IBOutlet weak var leftArrow: UILabel!
     @IBOutlet weak var ipTextField: UITextField!
     //@IBOutlet weak var largeMotionMagnitude: UIProgressView!
-
+    @IBOutlet weak var capturedImageView: UIImageView!
+    
     // MARK: Class Properties with Observers
     enum CalibrationStage:String {
         case notCalibrating = "notCalibrating"
@@ -85,8 +86,10 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
         // Set up the camera
         setupCamera()
         
-        // Additional setup for UI elements
-        // TODO: SET with Storybrd setupCapturedImageView()
+
+        // Initial state for the UIImageView
+        capturedImageView.contentMode = .scaleAspectFit
+        capturedImageView.isHidden = true // Hide initially until a photo is cap
 
         // create reusable animation
         //animation.timingFunction = CAMediaTimingFunction(name: //CAMediaTimingFunctionName.easeInEaseOut)
@@ -133,7 +136,7 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
         previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
         previewLayer.videoGravity = .resizeAspectFill
         previewLayer.frame = view.bounds
-        view.layer.addSublayer(previewLayer)
+        view.layer.insertSublayer(previewLayer, at: 0)
         
         // Start the session
         captureSession.startRunning()
@@ -147,10 +150,6 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
 //        view.addSubview(capturedImageView)
 //    }
     
-    //TODO: Add IBAction for the capture button
-//        @IBAction func capturePhotoButtonTapped(_ sender: UIButton) {
-//            capturePhoto()
-//        }
     @IBAction func capturePhotoButtonTapped(_ sender: UIButton) {
         capturePhoto()
     }
