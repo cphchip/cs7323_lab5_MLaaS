@@ -113,174 +113,6 @@ import matplotlib.pyplot as plt
 # PyObjectId = Annotated[str, BeforeValidator(str)]
 
 
-#========================================
-#   Practice image import
-#----------------------------------------
-'''
-We need to set things up so that we expect to receive a numpy array for each image
-provided by the user from their phone. Right now we're just going to try this with 
-local pictures to make sure we're importing and feeding the classifier correctly.
-'''
-from sklearn.svm import SVC
-import pandas as pd
-from sklearn.preprocessing import LabelEncoder
-from skimage import io, color, transform
-from skimage.feature import hog
-from skimage.util import random_noise
-from skimage.exposure import adjust_gamma
-from sklearn.metrics import accuracy_score
-from sklearn.decomposition import PCA
-import matplotlib.pyplot as plt
-import os
-
-# New Image and lable collection method
-# Load the CSV file
-csv_file = "./Images/labels.csv"
-data = pd.read_csv(csv_file)
-
-# Parameters
-img_size = (128, 128)
-
-# Load images and labels
-def load_data(data):
-    images = []
-    labels = []
-    for _, row in data.iterrows():
-        image = io.imread(row['Filename'])
-        image = transform.resize(image, img_size, anti_aliasing=True)  # Resize image
-        images.append(image)
-        labels.append(row['Label'])
-    return images, labels
-
-# Split data into training and test sets
-train_data = data[~data['Filename'].str.contains("Test")]
-test_data = data[data['Filename'].str.contains("Test")]
-
-train_images, train_labels = load_data(train_data)
-test_images, test_labels = load_data(test_data)
-
-
-def augment_images(images, labels):
-    augmented_images = []
-    augmented_labels = []
-    for img, label in zip(images, labels):
-        augmented_images.append(img)  # Original image
-        augmented_labels.append(label)
-
-        # Rotations
-        for angle in [90, 180, 270]:
-            rotated_img = transform.rotate(img, angle)
-            augmented_images.append(rotated_img)
-            augmented_labels.append(label)
-
-        # Flipping
-        flipped_img = img[:, ::-1]
-        augmented_images.append(flipped_img)
-        augmented_labels.append(label)
-
-        # # Add noise
-        noisy_img = random_noise(img, mode='gaussian', var=0.01)
-        augmented_images.append(noisy_img)
-        augmented_labels.append(label)
-
-        # Adjust brightness
-        brighter_img = adjust_gamma(img, gamma=0.5)
-        darker_img = adjust_gamma(img, gamma=2.0)
-        augmented_images.extend([brighter_img, darker_img])
-        augmented_labels.extend([label, label])
-
-    return augmented_images, augmented_labels
-
-
-# Apply PCA to reduce dimensionality
-def apply_pca(X_train, X_test, explained_variance=0.95):
-    pca = PCA(n_components=explained_variance)  # Retain 95% of variance
-    X_train_pca = pca.fit_transform(X_train)    # Fit and transform on training data
-    X_test_pca = pca.transform(X_test)          # Transform test data
-    print(f"Original number of features: {X_train.shape[1]}")
-    print(f"Reduced number of features: {X_train_pca.shape[1]}")
-    return X_train_pca, X_test_pca
-
-
-def create_dataset_with_hog(img_list, label_list=None): # code from Chat-GPT
-    pixels_per_cell = (4, 4) # higher values capture more global patterns (i.e. (16,16))
-    cells_per_block = (2, 2) # higher values less sensitive to fine-grained features
-    orientations = 9
-
-    # Convert to grayscale and extract HOG features
-    h, w = 128, 128
-    g_img = [color.rgb2gray(x) for x in img_list]  # Convert to grayscale
-    resize_img = [transform.resize(img, (h, w), anti_aliasing=True) for img in g_img]  # Resize images
-
-    # Extract HOG features for each image
-    hog_features = [hog(img, 
-                         orientations=orientations, 
-                         pixels_per_cell=pixels_per_cell, 
-                         cells_per_block=cells_per_block, 
-                         block_norm='L2-Hys') 
-                    for img in resize_img]
-
-    # Convert HOG features to numpy array
-    X = np.array(hog_features)
-
-    # If labels are provided, encode them
-
-    le = LabelEncoder()
-    y = le.fit_transform(label_list)  # dog: 0, not dog: 1
-
-    return X, y
-
-augmented_images, augmented_labels = augment_images(train_images, train_labels)
-X_train, y_train = create_dataset_with_hog(augmented_images,augmented_labels)
-X_test, y_test = create_dataset_with_hog(test_images, test_labels)
-
-X_train_pca, X_test_pca = apply_pca(X_train, X_test)
-
-# Print data shapes
-print("Shape of X_train:", X_train_pca.shape)
-print("Shape of y_train:", y_train.shape)
-print("Shape of X_test:", X_test_pca.shape)
-print("Shape of y_test:", y_test.shape)
-
-# Train an SVC
-svc = SVC()
-svc.fit(X_train_pca, y_train)
-
-print("Training complete!")
-
-y_pred = svc.predict(X_test_pca)
-print("Predictions:", y_pred)
-
-# Calculate accuracy
-accuracy = accuracy_score(y_test, y_pred)
-print(f"Accuracy: {accuracy:.2f}")
-
-
-def visualize_test_images(images, labels, images_per_row=4):
-    """
-    Visualizes the test images in a grid, with labels.
-    """
-    h, w = 128, 128  # Resize dimensions
-    grayscale_images = [color.rgb2gray(img) for img in images]  # Convert to grayscale
-    resized_images = [transform.resize(img, (h, w), anti_aliasing=True) for img in grayscale_images]
-
-    num_images = len(resized_images)
-    rows = (num_images + images_per_row - 1) // images_per_row  # Calculate rows needed
-
-    plt.figure(figsize=(images_per_row * 2, rows * 2))  # Dynamically adjust figure size
-    for i, img in enumerate(resized_images):
-        plt.subplot(rows, images_per_row, i + 1)
-        plt.imshow(img, cmap='gray')
-        plt.title(f"Label: {labels[i]}")
-        plt.axis('off')
-    plt.tight_layout()
-    plt.show()
-
-# Visualize the test images
-visualize_test_images(train_images, train_labels, images_per_row=5)
-
-visualize_test_images(test_images, test_labels, images_per_row=5)
-
 # #========================================
 # #   Data store objects from pydantic 
 # #----------------------------------------
@@ -290,7 +122,7 @@ visualize_test_images(test_images, test_labels, images_per_row=5)
 
 # '''Create the data model and use strong typing. This also helps with the use of intellisense.
 # '''
-# class LabeledDataPoint(BaseModel):
+# class LabeledDataPoint(BaseModel): # Need to update this function
 #     """
 #     Container for a single labeled data point.
 #     """
@@ -324,7 +156,7 @@ visualize_test_images(test_images, test_labels, images_per_row=5)
 #     datapoints: List[LabeledDataPoint]
 
 
-# class FeatureDataPoint(BaseModel):
+# class FeatureDataPoint(BaseModel): # Note: Going to have to update this function
 #     """
 #     Container for a single labeled data point.
 #     """
@@ -437,170 +269,202 @@ visualize_test_images(test_images, test_labels, images_per_row=5)
 #     raise HTTPException(status_code=404, detail=f"DSID {dsid} not found")
 
 
+#===========================================
+#   Machine Learning Model Common Functions
+#-------------------------------------------
+import pandas as pd
+from sklearn.svm import SVC
+from sklearn.preprocessing import LabelEncoder
+from skimage import io, color, transform
+from skimage.feature import hog
+from skimage.util import random_noise
+from skimage.exposure import adjust_gamma
+from sklearn.metrics import accuracy_score
+from sklearn.decomposition import PCA
+# import matplotlib.pyplot as plt
+# import os
 
-# #===========================================
-# #   Machine Learning methods (Scikit-learn)
-# #-------------------------------------------
-# # These allow us to interact with the REST server with ML from Turi. 
+# Parameters
+img_size = (128, 128)
 
-# @app.get(
-#     "/train_model_sklearn/{dsid}",
-#     response_description="Train a machine learning model for the given dsid",
-#     response_model_by_alias=False,
-# )
-# async def train_model_sklearn(dsid: int):
-#     """
-#     Train the machine learning model using Scikit-learn
-#     """
+# Load images and labels
+def load_data(data):
+    images = []
+    labels = []
+    for _, row in data.iterrows():
+        image = io.imread(row['Filename'])
+        image = transform.resize(image, img_size, anti_aliasing=True)  # Resize image
+        images.append(image)
+        labels.append(row['Label'])
+    return images, labels
 
-#     # convert data over to a scalable dataframe
+# Split data into training and test sets
+train_data = data[~data['Filename'].str.contains("Test")]
+test_data = data[data['Filename'].str.contains("Test")]
 
-#     datapoints = await app.collection.find({"dsid": dsid}).to_list(length=None)
-
-#     if len(datapoints) < 2:
-#         raise HTTPException(status_code=404, detail=f"DSID {dsid} has {len(datapoints)} datapoints.") 
-
-#     # convert to dictionary and create SFrame
-#     labels = [datapoint["label"] for datapoint in datapoints] 
-#     features = [datapoint["feature"] for datapoint in datapoints]
-        
-#     # create a classifier model  
-#     model = KNeighborsClassifier(n_neighbors=1)
-
-#     model.fit(features,labels) # training
-#     yhat = model.predict(features)
-#     acc = sum(yhat==labels)/float(len(labels))
-
-#     # just write this to model files directory
-#     dump(model, '../models/sklearn_model_dsid%d.joblib'%(dsid))
-
-#     # Flipped Module 4 Update: Section 3 step 11 part 1
-#     # Update app.clf to be a dictionary
-#     # app.clf = model 
-#     app.sk_clf[dsid] = model
-
-#     return {"summary":f"KNN classifier with accuracy {acc}"}
+train_images, train_labels = load_data(train_data)
+test_images, test_labels = load_data(test_data)
 
 
-# @app.post(
-#     "/predict_sklearn/",
-#     response_description="Predict Label from Datapoint",
-# )
-# async def predict_datapoint_sklearn(datapoint: FeatureDataPoint = Body(...)):
-#     """
-#     Post a feature set and get the label back
+def augment_images(images, labels):
+    augmented_images = []
+    augmented_labels = []
+    for img, label in zip(images, labels):
+        augmented_images.append(img)  # Original image
+        augmented_labels.append(label)
 
-#     """
+        # Rotations
+        for angle in [90, 180, 270]:
+            rotated_img = transform.rotate(img, angle)
+            augmented_images.append(rotated_img)
+            augmented_labels.append(label)
 
-#     # place inside an SFrame (that has one row)
-#     data = np.array(datapoint.feature).reshape((1,-1))
+        # Flipping
+        flipped_img = img[:, ::-1]
+        augmented_images.append(flipped_img)
+        augmented_labels.append(label)
 
-#     # Flipped Module 4 Update: Section 3 step 12 part 1 and 2
-#     # Updated to check if dsid exists, handle errors
-#     # if(app.clf == {}):
-#     if datapoint.dsid not in app.sk_clf: # new if statement
-#         print("Loading sk Model From file for DSID: ", datapoint.dsid)
+        # # Add noise
+        noisy_img = random_noise(img, mode='gaussian', var=0.01)
+        augmented_images.append(noisy_img)
+        augmented_labels.append(label)
 
-#         try:
-#             # Try to set model equal to the correct model from the dictionary
-#             model = tc.load('../models/sklearn_model_dsid%d.joblib'%(datapoint.dsid))
-#             # Updated to use dictionary
-#             app.sk_clf[datapoint.dsid] = model
-#         except Exception as e:
-#             raise HTTPException(
-#                 status_code = 404,
-#                 detail=f"Model for DSID {datapoint.dsid} not found. Model has not been trained. Error {str(e)}"
-#             )
-            
-#         # TODO: what happens if the user asks for a model that was never trained?
-#         #       or if the user asks for a dsid without any data? 
-#         #       need a graceful failure for the client...
+        # Adjust brightness
+        brighter_img = adjust_gamma(img, gamma=0.5)
+        darker_img = adjust_gamma(img, gamma=2.0)
+        augmented_images.extend([brighter_img, darker_img])
+        augmented_labels.extend([label, label])
+
+    return augmented_images, augmented_labels
 
 
-#     pred_label = app.sk_clf[datapoint.dsid].predict(data)
-#     return {"prediction":str(pred_label)}
+# Apply PCA to reduce dimensionality
+def apply_pca(X_train, X_test, explained_variance=0.95):
+    pca = PCA(n_components=explained_variance)
+    X_train_pca = pca.fit_transform(X_train)
+    X_test_pca = pca.transform(X_test)
+    print(f"Original number of features: {X_train.shape[1]}")
+    print(f"Reduced number of features: {X_train_pca.shape[1]}")
+    return X_train_pca, X_test_pca
+
+
+def create_dataset_with_hog(img_list, label_list=None): # code from Chat-GPT
+    pixels_per_cell = (4, 4) # higher values capture more global patterns (i.e. (16,16))
+    cells_per_block = (2, 2) # higher values less sensitive to fine-grained features
+    orientations = 9
+
+    # Convert to grayscale and extract HOG features
+    h, w = 128, 128
+    g_img = [color.rgb2gray(x) for x in img_list]  # Convert to grayscale
+    resize_img = [transform.resize(img, (h, w), anti_aliasing=True) for img in g_img]  # Resize images
+
+    # Extract HOG features for each image
+    hog_features = [hog(img, 
+                         orientations=orientations, 
+                         pixels_per_cell=pixels_per_cell, 
+                         cells_per_block=cells_per_block, 
+                         block_norm='L2-Hys') 
+                    for img in resize_img]
+
+    # Convert HOG features to numpy array
+    X = np.array(hog_features)
+
+    # If labels are provided, encode them
+
+    le = LabelEncoder()
+    y = le.fit_transform(label_list)  # dog: 0, not dog: 1
+
+    return X, y
 
 
 #===========================================
 #   Machine Learning methods (Scikit-learn SVM)
 #-------------------------------------------
-# These allow us to interact with the REST server with Support Vector Classification Scikit-learn.
 from sklearn.model_selection import train_test_split
 
-# @app.get(
-#     "/train_model_turi/{dsid}",
-#     response_description="Train a machine learning model for the given dsid",
-#     response_model_by_alias=False,
-# )
+@app.get(
+    "/train_model_svc/{dsid}", # instead of {dsid} should this be numpy array?
+    response_description="Train a machine learning model for the given dsid",
+    response_model_by_alias=False,
+)
 
-# async def train_model_svc(dsid: int):
-#     """
-#     Train the machine learning model on images provided by the user in a support vector classifier
+async def train_model_svc(dsid: int):
+    """
+    Train the machine learning model on images provided by the user in a support vector classifier
 
-#     """
+    """
 
-#     # convert data over to a scalable dataframe
+    augmented_images, augmented_labels = augment_images(train_images, train_labels)
+    X_train, y_train = create_dataset_with_hog(augmented_images,augmented_labels)
+    X_test, y_test = create_dataset_with_hog(test_images, test_labels)
 
-#     datapoints = await app.collection.find({"dsid": dsid}).to_list(length=None)
+    X_train_pca, X_test_pca = apply_pca(X_train, X_test)
 
-#     if len(datapoints) < 2:
-#         raise HTTPException(status_code=404, detail=f"DSID {dsid} has {len(datapoints)} datapoints.") 
-
-#     # convert to dictionary and create SFrame
-#     data = tc.SFrame(data={"target":[datapoint["label"] for datapoint in datapoints], 
-#         "sequence":np.array([datapoint["feature"] for datapoint in datapoints])}
-#     )
-        
-#     # create a classifier model  
-#     model = tc.classifier.create(data,target="target",verbose=0)# training
+    # Train an SVC
+    model = SVC()
+    model.fit(X_train_pca, y_train)
+    # model = tc.classifier.create(data,target="target",verbose=0)# training
     
-#     # save model for use later, if desired
-#     model.save("../models/turi_model_dsid%d"%(dsid))
+    # save model for use later, if desired
+    model.save("../models/svc_model_dsid%d"%(dsid)) # Will dsid play a role in our solution?
 
-#     # save this for use later 
+    # save this for use later 
 
-#     # Flipped Module 4 Update: Section 3 step 11 part 1
-#     # Update app.clf to be a dictionary
-#     app.clf[dsid] = model
+    # Flipped Module 4 Update: Section 3 step 11 part 1
+    # Update app.clf to be a dictionary
+    app.clf[dsid] = model
 
-#     return {"summary":f"{model}"}
+    return {"summary":f"{model}"}
 
 
-# @app.post(
-#     "/predict_turi/",
-#     response_description="Predict Label from Datapoint",
-# )
-# async def predict_datapoint_turi(datapoint: FeatureDataPoint = Body(...)):
-#     """
-#     Post a feature set and get the label back
+@app.post(
+    "/predict_svc/",
+    response_description="Predict Label from Datapoint",
+)
+async def predict_svc(datapoint: FeatureDataPoint = Body(...)):
+    """
+    Post a feature set and get the label back
 
-#     """
+    """
+    # X_test needs to be FeatureDataPoint, or something specific
+    # Expect np.array from user photo
+    y_pred = model.predict(X_test_pca) 
+    print("Predictions:", y_pred)
 
-#     # place inside an SFrame (that has one row)
-#     data = tc.SFrame(data={"sequence":np.array(datapoint.feature).reshape((1,-1))})
+    # Calculate accuracy
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f"Accuracy: {accuracy:.2f}")
 
-#     # Flipped Module 4 Update: Section 3 step 12 part 1 and 2
-#     # Updated to check if dsid exists, handle errors
-#     # if(app.clf == {}):
-#     if datapoint.dsid not in app.clf: # new if statement
-#         print("Loading Turi Model From file for DSID: ", datapoint.dsid)
+    # place inside an SFrame (that has one row)
+    data = tc.SFrame(data={"sequence":np.array(datapoint.feature).reshape((1,-1))})
 
-#         try:
-#             # Try to set model equal to the correct model from the dictionary
-#             model = tc.load_model("../models/turi_model_dsid%d"%(datapoint.dsid))
-#             # Updated to use dictionary
-#             app.clf[datapoint.dsid] = model
-#         except Exception as e:
-#             raise HTTPException(
-#                 status_code = 404,
-#                 detail=f"Model for DSID {datapoint.dsid} not found. Model has not been trained. Error {str(e)}"
-#             )
+    # # Flipped Module 4 Update: Section 3 step 12 part 1 and 2
+    # # Updated to check if dsid exists, handle errors
+    # # if(app.clf == {}):
+    # if datapoint.dsid not in app.clf: # new if statement
+    #     print("Loading Turi Model From file for DSID: ", datapoint.dsid)
 
-#         # TODO: what happens if the user asks for a model that was never trained?
-#         #       or if the user asks for a dsid without any data? 
-#         #       need a graceful failure for the client...
+    #     try:
+    #         # Try to set model equal to the correct model from the dictionary
+    #         model = tc.load_model("../models/turi_model_dsid%d"%(datapoint.dsid))
+    #         # Updated to use dictionary
+    #         app.clf[datapoint.dsid] = model
+    #     except Exception as e:
+    #         raise HTTPException(
+    #             status_code = 404,
+    #             detail=f"Model for DSID {datapoint.dsid} not found. Model has not been trained. Error {str(e)}"
+    #         )
 
-#     # Updated to use dictionary
-#     pred_label = app.clf[datapoint.dsid].predict(data)
-#     return {"prediction":str(pred_label)}
+        # TODO: what happens if the user asks for a model that was never trained?
+        #       or if the user asks for a dsid without any data? 
+        #       need a graceful failure for the client...
+
+    # Updated to use dictionary
+    pred_label = app.clf[datapoint.dsid].predict(data)
+    return {"prediction":str(pred_label)}
+
+
+#===========================================
+#   Machine Learning methods (Scikit-learn RF)
+#-------------------------------------------
 
