@@ -107,19 +107,40 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
             return
         }
         
+        // Convert the captured photo to UIImage
         if let photoData = photo.fileDataRepresentation(),
            let image = UIImage(data: photoData) {
-            DispatchQueue.main.async {
-                self.capturedImageView.image = image
-                self.capturedImageView.isHidden = false
-                
-                // Stop the camera after capturing the photo
-                self.stopCamera()
-                self.restoreUI() // Restore the initial UI state
+            
+            // Convert UIImage to JPEG data
+            if let jpegData = image.jpegData(compressionQuality: 1.0) { // Compression quality: 1.0 = maximum quality
+                // Save JPEG data to disk or use it as needed
+                saveJPEGToDisk(data: jpegData) // Optional function to save
+                DispatchQueue.main.async {
+                    self.capturedImageView.image = image
+                    self.capturedImageView.isHidden = false
+                    
+                    // Stop the camera after capturing the photo
+                    self.stopCamera()
+                    self.restoreUI() // Restore the initial UI state
+                }
+            } else {
+                print("Error converting image to JPEG format")
             }
         }
     }
     
+    func saveJPEGToDisk(data: Data) {
+        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let filePath = documentsPath.appendingPathComponent("captured_photo.jpg")
+        
+        do {
+            try data.write(to: filePath)
+            print("JPEG saved to: \(filePath)")
+        } catch {
+            print("Error saving JPEG to disk: \(error.localizedDescription)")
+        }
+    }
+
     
     // MARK:
     // Allow the user to change the IP via text field.
