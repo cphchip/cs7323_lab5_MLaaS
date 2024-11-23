@@ -39,7 +39,7 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
     var captureSession: AVCaptureSession!
     var photoOutput: AVCapturePhotoOutput!
     var previewLayer: AVCaptureVideoPreviewLayer!
-    //var capturedImageView: UIImageView!
+    var isCameraRunning = false // To track the camera state
 
 
     // state variables
@@ -56,6 +56,9 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
     @IBOutlet weak var ipTextField: UITextField!
     //@IBOutlet weak var largeMotionMagnitude: UIProgressView!
     @IBOutlet weak var capturedImageView: UIImageView!
+    
+    @IBOutlet weak var Calibrate: UIButton!
+    
     
     // MARK: Class Properties with Observers
     enum CalibrationStage:String {
@@ -81,15 +84,15 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.backgroundColor = .black
-        
-        // Set up the camera
-        setupCamera()
+        view.backgroundColor = .white
         
 
         // Initial state for the UIImageView
         capturedImageView.contentMode = .scaleAspectFit
         capturedImageView.isHidden = true // Hide initially until a photo is cap
+        
+        // Set the button's initial title
+         Calibrate.setTitle("Start Camera", for: .normal)
 
         // create reusable animation
         //animation.timingFunction = CAMediaTimingFunction(name: //CAMediaTimingFunctionName.easeInEaseOut)
@@ -108,39 +111,39 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
 
     }
     
-    func setupCamera() {
-        captureSession = AVCaptureSession()
-        captureSession.sessionPreset = .photo
-        
-        // Configure the camera device
-        guard let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
-            fatalError("No back camera available")
-        }
-        
-        do {
-            let input = try AVCaptureDeviceInput(device: camera)
-            if captureSession.canAddInput(input) {
-                captureSession.addInput(input)
-            }
-        } catch {
-            fatalError("Error setting up camera input: \(error)")
-        }
-        
-        // Configure the photo output
-        photoOutput = AVCapturePhotoOutput()
-        if captureSession.canAddOutput(photoOutput) {
-            captureSession.addOutput(photoOutput)
-        }
-        
-        // Configure the preview layer
-        previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
-        previewLayer.videoGravity = .resizeAspectFill
-        previewLayer.frame = view.bounds
-        view.layer.insertSublayer(previewLayer, at: 0)
-        
-        // Start the session
-        captureSession.startRunning()
-    }
+//    func setupCamera() {
+//        captureSession = AVCaptureSession()
+//        captureSession.sessionPreset = .photo
+//        
+//        // Configure the camera device
+//        guard let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
+//            fatalError("No back camera available")
+//        }
+//        
+//        do {
+//            let input = try AVCaptureDeviceInput(device: camera)
+//            if captureSession.canAddInput(input) {
+//                captureSession.addInput(input)
+//            }
+//        } catch {
+//            fatalError("Error setting up camera input: \(error)")
+//        }
+//        
+//        // Configure the photo output
+//        photoOutput = AVCapturePhotoOutput()
+//        if captureSession.canAddOutput(photoOutput) {
+//            captureSession.addOutput(photoOutput)
+//        }
+//        
+//        // Configure the preview layer
+//        previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
+//        previewLayer.videoGravity = .resizeAspectFill
+//        previewLayer.frame = view.bounds
+//        view.layer.insertSublayer(previewLayer, at: 0)
+//        
+//        // Start the session
+//        captureSession.startRunning()
+//    }
     
 //    func setupCapturedImageView() {
 //        // Configure the image view to display captured images
@@ -151,7 +154,9 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
 //    }
     
     @IBAction func capturePhotoButtonTapped(_ sender: UIButton) {
-        capturePhoto()
+        if isCameraRunning {
+            capturePhoto()
+        }
     }
     
     
@@ -172,6 +177,10 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
             DispatchQueue.main.async {
                 self.capturedImageView.image = image
                 self.capturedImageView.isHidden = false
+                
+                // Stop the camera after capturing the photo
+                self.stopCamera()
+                self.restoreUI() // Restore the initial UI state
             }
         }
     }
@@ -199,7 +208,74 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
     @IBAction func startCalibration(_ sender: AnyObject) {
         //self.isWaitingForMotionData = false // dont do anything yet
         //nextCalibrationStage() // kick off the calibration stages
+        if isCameraRunning {
+            stopCamera()
+            restoreUI()
+        } else {
+            startCamera()
+        }
+    }
+    
+    func startCamera() {
+        // Initialize the capture session if not already initialized
+        if captureSession == nil {
+            captureSession = AVCaptureSession()
+            captureSession.sessionPreset = .photo
+            
+            // Configure the camera device
+            guard let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
+                fatalError("No back camera available")
+            }
+            
+            do {
+                let input = try AVCaptureDeviceInput(device: camera)
+                if captureSession.canAddInput(input) {
+                    captureSession.addInput(input)
+                }
+            } catch {
+                fatalError("Error setting up camera input: \(error)")
+            }
+            
+            // Configure the photo output
+            photoOutput = AVCapturePhotoOutput()
+            if captureSession.canAddOutput(photoOutput) {
+                captureSession.addOutput(photoOutput)
+            }
+        }
+        
+        // Recreate the preview layer if it was removed
+        if previewLayer == nil {
+            previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
+            previewLayer.videoGravity = .resizeAspectFill
+            previewLayer.frame = view.bounds
+            view.layer.insertSublayer(previewLayer, at: 0)
+        }
+        
+        // Start the session
+        captureSession.startRunning()
+        isCameraRunning = true
+        Calibrate.setTitle("Stop Camera", for: .normal)
+        capturedImageView.isHidden = true // Hide the image view when the camera starts
+    }
 
+    func stopCamera() {
+        // Stop the capture session
+        captureSession.stopRunning()
+        isCameraRunning = false
+        Calibrate.setTitle("Start Camera", for: .normal)
+        
+        // Remove the preview layer to restore the initial background/UI
+        if previewLayer != nil {
+            previewLayer.removeFromSuperlayer()
+            previewLayer = nil
+        }
+    }
+    
+    func restoreUI() {
+        // Reset the UIImageView and other UI elements to their initial state
+        //capturedImageView.image = nil // Clear the captured image
+        //capturedImageView.isHidden = true // Hide the image view
+        view.backgroundColor = .white // Reset to the initial background color
     }
 
     @IBAction func makeModel(_ sender: AnyObject) {

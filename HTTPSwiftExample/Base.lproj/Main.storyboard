@@ -28,17 +28,6 @@
                                     <action selector="getDataSetId:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="kgo-Dp-LUA"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Q83-th-e1u">
-                                <rect key="frame" x="104.66666666666669" y="772" width="193" height="48"/>
-                                <color key="backgroundColor" systemColor="lightTextColor"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="30"/>
-                                <state key="normal" title="Calibrate Once">
-                                    <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                </state>
-                                <connections>
-                                    <action selector="startCalibration:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="nsx-sf-n99"/>
-                                </connections>
-                            </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Current DSID:  0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yA7-nd-seT">
                                 <rect key="frame" x="244" y="62" width="142" height="24"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="20"/>
@@ -62,7 +51,7 @@
                                 <textInputTraits key="textInputTraits" keyboardType="URL"/>
                             </textField>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vbq-k7-yWj">
-                                <rect key="frame" x="110" y="700" width="182" height="51"/>
+                                <rect key="frame" x="110" y="781" width="182" height="51"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="tinted" title=" Photo Capture"/>
@@ -74,6 +63,18 @@
                                 <rect key="frame" x="16" y="241" width="370" height="451"/>
                                 <autoresizingMask key="autoresizingMask" heightSizable="YES" flexibleMaxY="YES"/>
                             </imageView>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Q83-th-e1u">
+                                <rect key="frame" x="105" y="700" width="193" height="48"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" systemColor="lightTextColor"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="22"/>
+                                <state key="normal" title="Calibrate Once">
+                                    <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="startCalibration:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="nsx-sf-n99"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
@@ -81,8 +82,6 @@
                             <constraint firstItem="yA7-nd-seT" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="kh9-bI-dsS" secondAttribute="leadingMargin" id="JmY-fg-drR"/>
                             <constraint firstItem="kXJ-SL-qGM" firstAttribute="top" secondItem="jyV-Pf-zRb" secondAttribute="bottom" id="SBS-4X-IRU"/>
                             <constraint firstItem="yA7-nd-seT" firstAttribute="top" secondItem="jyV-Pf-zRb" secondAttribute="bottom" id="VrV-uX-lFx"/>
-                            <constraint firstItem="2fi-mo-0CV" firstAttribute="top" secondItem="Q83-th-e1u" secondAttribute="bottom" constant="20" id="XgC-Er-Szf"/>
-                            <constraint firstItem="Q83-th-e1u" firstAttribute="centerX" secondItem="kh9-bI-dsS" secondAttribute="centerX" id="XyN-Cw-SqW"/>
                             <constraint firstItem="kXJ-SL-qGM" firstAttribute="leading" secondItem="kh9-bI-dsS" secondAttribute="leadingMargin" id="kMd-Z1-Hr6"/>
                             <constraint firstItem="hnx-72-uCy" firstAttribute="top" secondItem="jyV-Pf-zRb" secondAttribute="bottom" constant="79" id="oSl-Zs-r7a"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="kXJ-SL-qGM" secondAttribute="trailingMargin" id="q2a-1d-Qbh"/>
@@ -90,6 +89,7 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="Calibrate" destination="Q83-th-e1u" id="OMf-CE-peP"/>
                         <outlet property="capturedImageView" destination="kmq-xo-TVW" id="j6i-K5-lkb"/>
                         <outlet property="dsidLabel" destination="yA7-nd-seT" id="pMu-dh-28l"/>
                         <outlet property="ipTextField" destination="sYP-We-ZjB" id="ohT-HM-1KU"/>
