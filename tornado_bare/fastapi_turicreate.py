@@ -601,7 +601,7 @@ def load_data(data):
     return images, labels
 
 # Split data into training and test sets
-train_data = data[~data['Filename'].str.contains("Test")] # Everything not containing "Test"
+train_data = data[~data['Filename'].str.contains("Test")] # Filepaths not containing "Test"
 test_data = data[data['Filename'].str.contains("Test")] # Everything else
 
 train_images, train_labels = load_data(train_data)
@@ -685,12 +685,12 @@ def create_dataset_with_hog(img_list, label_list=None): # code from Chat-GPT
 
 @app.get(
     "/train_model_svc/{dsid}", # instead of {dsid} should this be numpy array?
-    response_description="Train a machine learning model for the given dsid",
+    response_description="Train a machine learning model for Support Vector Classification",
     response_model_by_alias=False,
 )
 
 # async def train_model_svc(dsid: int):
-async def train_model_svc(images: np.array, labels:):
+async def train_model_svc(train_images: list, train_labels: list):
     """
     Train the machine learning model on images provided by the user in a support vector classifier
 
@@ -698,22 +698,17 @@ async def train_model_svc(images: np.array, labels:):
 
     augmented_images, augmented_labels = augment_images(train_images, train_labels)
     X_train, y_train = create_dataset_with_hog(augmented_images,augmented_labels)
-    X_test, y_test = create_dataset_with_hog(test_images, test_labels)
 
-    X_train_pca, X_test_pca = apply_pca(X_train, X_test)
+    X_train_pca = apply_pca(X_train)
 
     # Train an SVC
     model_svc = SVC()
     model_svc.fit(X_train_pca, y_train)
-    # model = tc.classifier.create(data,target="target",verbose=0)# training
     
     # save model for use later, if desired
-    model_svc.save("../models/svc_model_dsid%d"%(dsid)) # Will dsid play a role in our solution?
+    model_svc.save("../models/svc_model")
 
-    # save this for use later 
-
-    # Flipped Module 4 Update: Section 3 step 11 part 1
-    # Update app.clf to be a dictionary
+    ### Needs updated ###
     app.clf[dsid] = model_svc
 
     return {"summary":f"{model_svc}"}
@@ -723,13 +718,15 @@ async def train_model_svc(images: np.array, labels:):
     "/predict_svc/",
     response_description="Predict Label from Datapoint",
 )
-async def predict_svc(datapoint: FeatureDataPoint = Body(...)):
+async def predict_svc(test_image: np.array):
     """
     Post a feature set and get the label back
 
     """
     # X_test needs to be FeatureDataPoint, or something specific
     # Expect np.array from user photo
+    X_test = # something with test_image parameter
+    X_test_pca = apply_pca(X_test)
     y_pred = model_svc.predict(X_test_pca) 
     print("Predictions:", y_pred)
 
