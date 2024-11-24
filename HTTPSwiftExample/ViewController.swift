@@ -33,8 +33,6 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
     // operation queues
     //let calibrationOperationQueue = OperationQueue()
 
-    // TODO: relace in storyboard....@IBOutlet wek var captureButton: UIButton!
-    
     
     // Photo capture properties
     var captureSession: AVCaptureSession!
@@ -42,16 +40,18 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
     var previewLayer: AVCaptureVideoPreviewLayer!
     var isCameraRunning = false // To track the camera state
 
+    var objDetectMenuItems: [String] = []
 
     // state variables
     var isCalibrating = false
 
     // User Interface properties
-    @IBOutlet weak var dsidLabel: UILabel!
     @IBOutlet weak var ipTextField: UITextField!
     @IBOutlet weak var capturedImageView: UIImageView!
-    @IBOutlet weak var Calibrate: UIButton!
     
+    @IBOutlet weak var StartStopCamera: UIButton!
+    @IBOutlet weak var objDetectPullDown: UIButton!
+    @IBOutlet weak var newObjToDetect: UITextField!
     
     // MARK: Class Properties with Observers
     enum CalibrationStage:String {
@@ -76,7 +76,7 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
         capturedImageView.isHidden = true // Hide initially until a photo is cap
         
         // Set the button's initial title
-         Calibrate.setTitle("Start Camera", for: .normal)
+        StartStopCamera.setTitle("Start Camera", for: .normal)
 
         // use delegation for interacting with client
         //client.delegate = self
@@ -84,8 +84,86 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
 
         //ipTextField.delegate = self
         //ipTextField.text = client.server_ip
+        
+        newObjToDetect.delegate = self
+        setupInitialMenu()
 
     }
+    
+//    @IBAction func addItemObjToDetectTapped(_ sender: UIButton) {
+//        guard let newItem = newObjToDetect.text, !newItem.isEmpty else {
+//            print("No item entered")
+//            return
+//        }
+//        print("newItem added: \(newItem)")
+//        // Append the new item to the menu dynamically
+//        objDetectMenuItems.append(newItem)
+//        updateMenu(with: objDetectMenuItems)
+//
+//        // Clear the text field
+//        newObjToDetect.text = ""
+//    }
+    @IBAction func addItemObjToDetectTapped(_ sender: UIButton) {
+        // Handle "Add Item" button tap
+           guard let newItem = newObjToDetect.text, !newItem.isEmpty else { return }
+
+           // Add item and update menu
+            objDetectMenuItems.append(newItem)
+            updateMenu(with: objDetectMenuItems)
+
+           // Clear text field and dismiss keyboard
+            newObjToDetect.text = ""
+            //newObjToDetect.resignFirstResponder()
+    }
+    
+    //@IBAction func addItemObjToDetectTapped(_ sender: UITextField) {
+//        
+//        guard let newItem = newObjToDetect.text, !newItem.isEmpty else {
+//            print("No item entered")
+//            return
+//        }
+//        print("newItem added: \(newItem)")
+//        // Append the new item to the menu dynamically
+//        objDetectMenuItems.append(newItem)
+//        updateMenu(with: objDetectMenuItems)
+//
+//        // Clear the text field
+//        newObjToDetect.text = ""
+   // }
+    
+    
+    
+    func updateMenu(with items: [String]) {
+        print("Updating menu with items: \(items)")
+        
+        guard !items.isEmpty else {
+            print("No items to add to menu")
+            return
+        }
+
+        var menuActions: [UIAction] = []
+
+        for item in items {
+            let action = UIAction(title: item, handler: { _ in
+                print("\(item) selected")
+            })
+            menuActions.append(action)
+        }
+
+        // Create and assign the new menu
+        let menu = UIMenu(title: "Options", children: menuActions)
+        objDetectPullDown.menu = menu
+        objDetectPullDown.showsMenuAsPrimaryAction = true
+
+        print("Menu updated successfully")
+    }
+
+    private func setupInitialMenu() {
+        // Optional: Set an initial menu
+        updateMenu(with: [])
+    }
+    
+    
     
     // Photo capture button pressed. Capture photo
     @IBAction func capturePhotoButtonTapped(_ sender: UIButton) {
@@ -145,24 +223,42 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
     // MARK:
     // Allow the user to change the IP via text field.
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        if let ipText = ipTextField.text, !ipText.isEmpty {
-            //client.setServerIp(ip: ipText)
-            //print("IP set to ", client.server_ip)
-        } else {
-            print("New IP is nil or empty")
+        if textField == ipTextField{
+            if let ipText = ipTextField.text, !ipText.isEmpty {
+                //client.setServerIp(ip: ipText)
+                //print("IP set to ", client.server_ip)
+            } else {
+                print("New IP is nil or empty")
+            }
+            ipTextField.resignFirstResponder()
+        } else if textField == newObjToDetect{
+            
+            if let newDetectObj = newObjToDetect.text, !newDetectObj.isEmpty {
+                print("newDetectObj= \(newDetectObj)")
+            } else {
+                print("newDetectObj is nil or empty")
+            }
+            
         }
-
-        ipTextField.resignFirstResponder()
         return true
     }
 
     //MARK: UI Buttons
-    @IBAction func getDataSetId(_ sender: AnyObject) {
+  //  @IBAction func getDataSetId(_ sender: AnyObject) {
         //client.getNewDsid() // protocol used to update dsid
-    }
+  //  }
 
-    @IBAction func startCalibration(_ sender: AnyObject) {
-        //nextCalibrationStage() // kick off the calibration stages
+//    @IBAction func startCalibration(_ sender: AnyObject) {
+//        //nextCalibrationStage() // kick off the calibration stages
+//        if isCameraRunning {   // If Camera is active, stop camera and restore UI
+//            stopCamera()
+//            restoreUI()
+//        } else {
+//            startCamera()      //If Camera not active, start camera
+//        }
+//    }
+    
+    @IBAction func startStopCameraOps(_ sender: Any) {
         if isCameraRunning {   // If Camera is active, stop camera and restore UI
             stopCamera()
             restoreUI()
@@ -170,6 +266,7 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
             startCamera()      //If Camera not active, start camera
         }
     }
+    
     
     func startCamera() {
         // Initialize the capture session if not already initialized
@@ -212,7 +309,7 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
             DispatchQueue.main.async {
                 // Update UI-related elements on the main thread
                 self.isCameraRunning = true
-                self.Calibrate.setTitle("Stop Camera", for: .normal)
+                self.StartStopCamera.setTitle("Stop Camera", for: .normal)
                 self.capturedImageView.isHidden = true // Hide the image view when the camera starts
             }
         }
@@ -222,7 +319,7 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
         // Stop the capture session
         captureSession.stopRunning()
         isCameraRunning = false
-        Calibrate.setTitle("Start Camera", for: .normal)
+        StartStopCamera.setTitle("Start Camera", for: .normal)
         
         // Remove the preview layer to restore the initial background/UI
         if previewLayer != nil {
@@ -252,7 +349,7 @@ extension ViewController {
         DispatchQueue.main.async{
             // update label when set
            // self.dsidLabel.layer.add(self.animation, forKey: nil)
-            self.dsidLabel.text = "Current DSID: \(newDsid)"
+            //self.dsidLabel.text = "Current DSID: \(newDsid)"
         }
     }
 
