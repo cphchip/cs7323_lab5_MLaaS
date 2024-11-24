@@ -22,7 +22,7 @@ def load_data(data):
     images = []
     labels = []
     for _, row in data.iterrows():
-        image = io.imread(row['Filename'])
+        image = io.imread(row['Filename']) # Returns np.arrays of photos
         image = transform.resize(image, img_size, anti_aliasing=True)  # Resize image
         images.append(image)
         labels.append(row['Label'])
@@ -69,9 +69,9 @@ def augment_images(images, labels):
 
 # Apply PCA to reduce dimensionality
 def apply_pca(X_train, X_test, explained_variance=0.95):
-    pca = PCA(n_components=explained_variance)  # Retain 95% of variance
-    X_train_pca = pca.fit_transform(X_train)    # Fit and transform on training data
-    X_test_pca = pca.transform(X_test)          # Transform test data
+    pca = PCA(n_components=explained_variance)
+    X_train_pca = pca.fit_transform(X_train)
+    X_test_pca = pca.transform(X_test)
     print(f"Original number of features: {X_train.shape[1]}")
     print(f"Reduced number of features: {X_train_pca.shape[1]}")
     return X_train_pca, X_test_pca
@@ -113,13 +113,15 @@ X_train_pca, X_test_pca = apply_pca(X_train, X_test)
 
 # Train a OneClassSVM
 ocsvm = OneClassSVM(kernel='rbf', gamma=0.1, nu=0.05)  # nu=0.05 for 5% of outliers
-ocsvm.fit(X_train)  # Only fit on the "normal" data (inliers)
+# ocsvm.fit(X_train_pca)  # Only fit on the "normal" data (inliers)
+ocsvm.fit(X_train) # Skip PCA
 
 print("Training complete!")
 
 # Predict on test set
 # y_pred = ocsvm.predict(X_test_pca)  # 1 for inliers, -1 for outliers
-y_pred = ocsvm.predict(X_test)  # 1 for inliers, -1 for outliers
+y_pred = ocsvm.predict(X_test)  # skip PCA
+
 
 print("Predictions:", y_pred)
 
@@ -129,6 +131,8 @@ print(f"Number of anomalies detected: {anomalies}")
 
 # Optional: You can also print or visualize the results in some way
 # For example, visualizing some anomalies in test set images:
-plt.imshow(test_images[0])
-plt.title(f"Prediction: {'Anomaly' if y_pred[0] == -1 else 'Normal'}")
-plt.show()
+for image in test_images:
+# plt.imshow(test_images[0])
+    plt.imshow(image)
+    plt.title(f"Prediction: {'Anomaly' if y_pred[0] == -1 else 'Normal'}")
+    plt.show()
