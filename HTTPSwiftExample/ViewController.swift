@@ -186,12 +186,17 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
         if let photoData = photo.fileDataRepresentation(),
            let image = UIImage(data: photoData) {
             
+            // Resize the image to 512x512
+            let targetSize = CGSize(width: 512, height: 512)
+            let resizedImage = resizeImage(image: image, targetSize: targetSize)
+            
             // Convert UIImage to JPEG data
-            if let jpegData = image.jpegData(compressionQuality: 1.0) { // Compression quality: 1.0 = maximum quality
+            if let jpegData = resizedImage?.jpegData(compressionQuality: 1.0) { // Compression quality: 1.0 = maximum quality
                 // Save JPEG data to disk or use it as needed
                 saveJPEGToDisk(data: jpegData) // Optional function to save
                 DispatchQueue.main.async {
-                    self.capturedImageView.image = image
+                    // self.capturedImageView.image = image
+                    self.capturedImageView.image = resizedImage
                     self.capturedImageView.isHidden = false
                     
                     // Stop the camera after capturing the photo
@@ -201,6 +206,13 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
             } else {
                 print("Error converting image to JPEG format")
             }
+        }
+    }
+    
+    func resizeImage(image: UIImage, targetSize: CGSize) -> UIImage? {
+        let renderer = UIGraphicsImageRenderer(size: targetSize)
+        return renderer.image { _ in
+            image.draw(in: CGRect(origin: .zero, size: targetSize))
         }
     }
     
@@ -325,6 +337,8 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
     }
     
     @IBAction func predictModel(_ sender: Any) {
+        let selectedIndex = modelSelector.selectedSegmentIndex
+        let selectedTitle = modelSelector.titleForSegment(at: selectedIndex)
         //client.predictModel()
     }
     
