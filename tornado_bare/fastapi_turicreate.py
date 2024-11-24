@@ -71,6 +71,9 @@ from sklearn.metrics import accuracy_score
 from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestClassifier
 
+from joblib import dump, load
+
+
 
 # define some things in API
 async def custom_lifespan(app: FastAPI):
@@ -116,13 +119,6 @@ app = FastAPI(
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
 
-#===================================================================================================
-# Acknowledgment:
-# Portions of this code were generated with the assistance of ChatGPT, an AI language model developed by OpenAI. 
-# The generated code was reviewed, modified, and integrated into the project to meet specific requirements.
-#--------------------------------------------------------------------------------------------------
-
-
 #========================================
 #   Data store objects from pydantic 
 #----------------------------------------
@@ -135,7 +131,7 @@ Create the data model and use strong typing. This also helps with the use of int
 
 '''
 
-class LabeledDataPoint(BaseModel): # Need to update this function
+class LabeledDataPoint(BaseModel):
     """
     Container for a single labeled data point.
     """
@@ -169,7 +165,7 @@ class LabeledDataPointCollection(BaseModel):
     datapoints: List[LabeledDataPoint]
 
 
-class FeatureDataPoint(BaseModel): # Note: Going to have to update this function
+class FeatureDataPoint(BaseModel):
     """
     Container for a single labeled data point.
     """
@@ -289,25 +285,7 @@ async def delete_dataset(dsid: int):
 # Parameters
 img_size = (128, 128)
 
-# Load images and labels
-def load_data(data):
-    images = []
-    labels = []
-    for _, row in data.iterrows():
-        image = io.imread(row['Filename'])
-        image = transform.resize(image, img_size, anti_aliasing=True)  # Resize image
-        images.append(image)
-        labels.append(row['Label'])
-    return images, labels
-
-# Split data into training and test sets
-train_data = data[~data['Filename'].str.contains("Test")] # Filepaths not containing "Test"
-test_data = data[data['Filename'].str.contains("Test")] # Everything else
-
-train_images, train_labels = load_data(train_data)
-test_images, test_labels = load_data(test_data)
-
-
+# Augment the images to create more diverse training set
 def augment_images(images, labels):
     augmented_images = []
     augmented_labels = []
@@ -379,22 +357,35 @@ def create_dataset_with_hog(img_list, label_list=None): # code from Chat-GPT
     return X, y
 
 
-#===========================================
+#==============================================
 #   Machine Learning methods (Scikit-learn SVM)
-#-------------------------------------------
+#----------------------------------------------
 
 @app.get(
-    "/train_model_svc", # instead of {dsid} should this be numpy array?
+    "/train_model_svc/{dsid}", # instead of {dsid} should this be numpy array?
     response_description="Train a machine learning model for Support Vector Classification",
     response_model_by_alias=False,
 )
 
 # async def train_model_svc(dsid: int):
-async def train_model_svc(train_images: list, train_labels: list):
+async def train_model_svc(dsid: int): 
     """
     Train the machine learning model on images provided by the user in a support vector classifier
 
     """
+    datapoints = await app.collection.find({"dsid": dsid}).to_list(length=None)
+
+    if len(datapoints) < 2:
+        raise HTTPException(status_code=404, detail=f"DSID {dsid} has {len(datapoints)} datapoints.") 
+
+
+    # Will no longer be using the SFrame
+    # data = tc.SFrame(data={"target":[datapoint["label"] for datapoint in datapoints], 
+    #     "sequence":np.array([datapoint["feature"] for datapoint in datapoints])}
+    # )
+
+    train_labels = np.array([datapoint["label"] for datapoint in datapoints])
+    train_images = np.array([datapoint["feature"] for datapoint in datapoints])
 
     augmented_images, augmented_labels = augment_images(train_images, train_labels)
     X_train, y_train = create_dataset_with_hog(augmented_images,augmented_labels)
@@ -406,9 +397,8 @@ async def train_model_svc(train_images: list, train_labels: list):
     model_svc.fit(X_train_pca, y_train)
     
     # save model for use later, if desired
-    model_svc.save("../models/svc_model")
+    model_svc.save("../models/svc_model_dsid%d"%(dsid))
 
-    ### Needs updated ###
     app.clf[dsid] = model_svc
 
     return {"summary":f"{model_svc}"}
@@ -418,41 +408,35 @@ async def train_model_svc(train_images: list, train_labels: list):
     "/predict_svc",
     response_description="Predict Label from Datapoint",
 )
-async def predict_svc(test_image: np.array):
+async def predict_datapoint_svc(datapoint: FeatureDataPoint = Body(...)):
     """
-    Post a feature set and get the label back
-
+    Post a feature set and get the label back.
     """
+    # Reshape the feature array for prediction
+    feature_array = np.array(datapoint.feature).reshape((1, -1))
 
-    # Expect np.array from user photo
-    X_test = create_dataset_with_hog(test_image)
-    X_test_pca = apply_pca(X_test)
-    y_pred = model_svc.predict(X_test_pca) 
-    print("Predictions:", y_pred)
+    # Check if the model exists for the given dsid
+    if datapoint.dsid not in app.clf:
+        print("Loading SVC Model From file for DSID:", datapoint.dsid)
 
-    # place inside an SFrame (that has one row)
-    data = tc.SFrame(data={"sequence":np.array(datapoint.feature).reshape((1,-1))})
+        try:
+            # Load the scikit-learn model
+            model_path = f"../models/svc_model_dsid{datapoint.dsid}.joblib"
+            model = joblib.load(model_path)
 
-    # # Flipped Module 4 Update: Section 3 step 12 part 1 and 2
-    # # Updated to check if dsid exists, handle errors
-    # # if(app.clf == {}):
-    # if datapoint.dsid not in app.clf: # new if statement
-    #     print("Loading Turi Model From file for DSID: ", datapoint.dsid)
+            # Store the loaded model in the dictionary
+            app.clf[datapoint.dsid] = model
+        except Exception as e:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Model for DSID {datapoint.dsid} not found. Model has not been trained. Error: {str(e)}"
+            )
 
-    #     try:
-    #         # Try to set model equal to the correct model from the dictionary
-    #         model = tc.load_model("../models/turi_model_dsid%d"%(datapoint.dsid))
-    #         # Updated to use dictionary
-    #         app.clf[datapoint.dsid] = model
-    #     except Exception as e:
-    #         raise HTTPException(
-    #             status_code = 404,
-    #             detail=f"Model for DSID {datapoint.dsid} not found. Model has not been trained. Error {str(e)}"
-    #         )
+    # Predict the label using the loaded model
+    model = app.clf[datapoint.dsid]
+    predicted_label = model.predict(feature_array)[0]
 
-    # Updated to use dictionary
-    pred_label = app.clf[datapoint.dsid].predict(data)
-    return {"prediction":str(pred_label)}
+    return {"predicted_label": predicted_label}
 
 
 #=============================================
@@ -460,16 +444,30 @@ async def predict_svc(test_image: np.array):
 #---------------------------------------------
 
 @app.get(
-    "/train_model_rf", # instead of {dsid} should this be numpy array?
+    "/train_model_rf/{dsid}", # instead of {dsid} should this be numpy array?
     response_description="Train a machine learning model for the given dsid",
     response_model_by_alias=False,
 )
 
-async def train_model_rf(train_images: list, train_labels: list):
+async def train_model_rf(dsid: int):
     """
     Train the machine learning model on images provided by the user in a support vector classifier
 
     """
+
+    datapoints = await app.collection.find({"dsid": dsid}).to_list(length=None)
+
+    if len(datapoints) < 2:
+        raise HTTPException(status_code=404, detail=f"DSID {dsid} has {len(datapoints)} datapoints.") 
+
+
+    # Will no longer be using the SFrame
+    # data = tc.SFrame(data={"target":[datapoint["label"] for datapoint in datapoints], 
+    #     "sequence":np.array([datapoint["feature"] for datapoint in datapoints])}
+    # )
+
+    train_labels = np.array([datapoint["label"] for datapoint in datapoints])
+    train_images = np.array([datapoint["feature"] for datapoint in datapoints])
 
     augmented_images, augmented_labels = augment_images(train_images, train_labels)
     X_train, y_train = create_dataset_with_hog(augmented_images,augmented_labels)
@@ -481,49 +479,45 @@ async def train_model_rf(train_images: list, train_labels: list):
     model_rf.fit(X_train_pca, y_train)
     
     # save model for use later, if desired
-    model_rf.save("../models/rf_model_dsid")
+    model_rf.save("../models/rf_model_dsid%d"%(dsid))
 
-    # Flipped Module 4 Update: Section 3 step 11 part 1
-    # Update app.clf to be a dictionary
     app.clf[dsid] = model_rf
 
     return {"summary":f"{model_rf}"}
 
 
 @app.post(
-    "/predict_svc/",
+    "/predict_rf/",
     response_description="Predict Label from Datapoint",
 )
-async def predict_svc(test_image: np.array):
+async def predict_rf(datapoint: FeatureDataPoint = Body(...)):
+    # async def predict_datapoint_turi(datapoint: FeatureDataPoint = Body(...)):
     """
     Post a feature set and get the label back
 
     """
+    # Reshape the feature array for prediction
+    feature_array = np.array(datapoint.feature).reshape((1, -1))
 
-    # Expect np.array from user photo
-    X_test = create_dataset_with_hog(test_image)
-    X_test_pca = apply_pca(X_test)
-    y_pred = model_rf.predict(X_test_pca)
-    # y_pred = model_rf.predict(X_test_pca) 
-    print("Predictions:", y_pred)
+    # Check if the model exists for the given dsid
+    if datapoint.dsid not in app.clf:
+        print("Loading RF Model From file for DSID:", datapoint.dsid)
 
-    # # Flipped Module 4 Update: Section 3 step 12 part 1 and 2
-    # # Updated to check if dsid exists, handle errors
-    # # if(app.clf == {}):
-    # if datapoint.dsid not in app.clf: # new if statement
-    #     print("Loading Turi Model From file for DSID: ", datapoint.dsid)
+        try:
+            # Load the scikit-learn model
+            model_path = f"../models/rf_model_dsid{datapoint.dsid}.joblib"
+            model = joblib.load(model_path)
 
-    #     try:
-    #         # Try to set model equal to the correct model from the dictionary
-    #         model = tc.load_model("../models/turi_model_dsid%d"%(datapoint.dsid))
-    #         # Updated to use dictionary
-    #         app.clf[datapoint.dsid] = model
-    #     except Exception as e:
-    #         raise HTTPException(
-    #             status_code = 404,
-    #             detail=f"Model for DSID {datapoint.dsid} not found. Model has not been trained. Error {str(e)}"
-    #         )
+            # Store the loaded model in the dictionary
+            app.clf[datapoint.dsid] = model
+        except Exception as e:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Model for DSID {datapoint.dsid} not found. Model has not been trained. Error: {str(e)}"
+            )
 
-    # Updated to use dictionary
-    pred_label = app.clf[datapoint.dsid].predict(data)
-    return {"prediction":str(pred_label)}
+    # Predict the label using the loaded model
+    model = app.clf[datapoint.dsid]
+    predicted_label = model.predict(feature_array)[0]
+
+    return {"predicted_label": predicted_label}

@@ -64,7 +64,7 @@ def augment_images(images, labels):
         augmented_images.append(flipped_img)
         augmented_labels.append(label)
 
-        # # Add noise
+        # Add noise
         noisy_img = random_noise(img, mode='gaussian', var=0.01)
         augmented_images.append(noisy_img)
         augmented_labels.append(label)
@@ -110,7 +110,6 @@ def create_dataset_with_hog(img_list, label_list=None): # code from Chat-GPT
     X = np.array(hog_features)
 
     # If labels are provided, encode them
-
     le = LabelEncoder()
     y = le.fit_transform(label_list)  # dog: 0, not dog: 1
 
@@ -142,27 +141,27 @@ accuracy = accuracy_score(y_test, y_pred)
 print(f"Accuracy: {accuracy:.2f}")
 
 
-def visualize_test_images(images, labels, images_per_row=4):
-    """
-    Visualizes the test images in a grid, with labels.
-    """
-    h, w = 128, 128  # Resize dimensions
-    grayscale_images = [color.rgb2gray(img) for img in images]  # Convert to grayscale
-    resized_images = [transform.resize(img, (h, w), anti_aliasing=True) for img in grayscale_images]
+# def visualize_test_images(images, labels, images_per_row=4):
+#     """
+#     Visualizes the test images in a grid, with labels.
+#     """
+#     h, w = 128, 128  # Resize dimensions
+#     grayscale_images = [color.rgb2gray(img) for img in images]  # Convert to grayscale
+#     resized_images = [transform.resize(img, (h, w), anti_aliasing=True) for img in grayscale_images]
 
-    num_images = len(resized_images)
-    rows = (num_images + images_per_row - 1) // images_per_row  # Calculate rows needed
+#     num_images = len(resized_images)
+#     rows = (num_images + images_per_row - 1) // images_per_row  # Calculate rows needed
 
-    plt.figure(figsize=(images_per_row * 2, rows * 2))  # Dynamically adjust figure size
-    for i, img in enumerate(resized_images):
-        plt.subplot(rows, images_per_row, i + 1)
-        plt.imshow(img, cmap='gray')
-        plt.title(f"Label: {labels[i]}")
-        plt.axis('off')
-    plt.tight_layout()
-    plt.show()
+#     plt.figure(figsize=(images_per_row * 2, rows * 2))  # Dynamically adjust figure size
+#     for i, img in enumerate(resized_images):
+#         plt.subplot(rows, images_per_row, i + 1)
+#         plt.imshow(img, cmap='gray')
+#         plt.title(f"Label: {labels[i]}")
+#         plt.axis('off')
+#     plt.tight_layout()
+#     plt.show()
 
-# Visualize the test images
-visualize_test_images(train_images, train_labels, images_per_row=5)
+# # Visualize the test images
+# visualize_test_images(train_images, train_labels, images_per_row=5)
 
-visualize_test_images(test_images, test_labels, images_per_row=5)
+# visualize_test_images(test_images, test_labels, images_per_row=5)
