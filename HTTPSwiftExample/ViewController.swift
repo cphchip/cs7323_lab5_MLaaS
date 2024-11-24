@@ -28,7 +28,7 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
     // MARK: Class Properties
     
     // interacting with server
-    //let client = MlaasModel() // how we will interact with the server
+    let client = MlaasModel() // how we will interact with the server
     
     // operation queues
     //let calibrationOperationQueue = OperationQueue()
@@ -81,11 +81,11 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
         StartStopCamera.setTitle("Start Camera", for: .normal)
 
         // use delegation for interacting with client
-        //client.delegate = self
-        //client.updateDsid(5) // set default dsid to start with
+        client.delegate = self
+        client.updateDsid(5) // set default dsid to start with
 
-        //ipTextField.delegate = self
-        //ipTextField.text = client.server_ip
+        ipTextField.delegate = self
+        ipTextField.text = client.server_ip
         
         newObjToDetect.delegate = self
         // Set up the initial menu
