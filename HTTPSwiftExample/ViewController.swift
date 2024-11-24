@@ -52,6 +52,8 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
     @IBOutlet weak var StartStopCamera: UIButton!
     @IBOutlet weak var objDetectPullDown: UIButton!
     @IBOutlet weak var newObjToDetect: UITextField!
+
+    @IBOutlet weak var modelSelector: UISegmentedControl!
     
     // MARK: Class Properties with Observers
     enum CalibrationStage:String {
@@ -146,9 +148,19 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
           newObjToDetect.text = ""
           newObjToDetect.resignFirstResponder()
       }
-
     
-    
+    @IBAction func modelSelectValueChanged(_ sender: UISegmentedControl) {
+        // Retrieve the selected index
+        let selectedIndex = sender.selectedSegmentIndex
+        
+        // Get the title of the selected segment (if needed)
+        let selectedTitle = sender.titleForSegment(at: selectedIndex)
+        
+        print("Selected Index: \(selectedIndex)")
+        print("Selected Title: \(selectedTitle ?? "None")")
+        
+        
+    }
     
     // Photo capture button pressed. Capture photo
     @IBAction func capturePhotoButtonTapped(_ sender: UIButton) {
@@ -307,7 +319,13 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
     }
 
     @IBAction func makeModel(_ sender: AnyObject) {
-        //client.trainModel()
+        let selectedIndex = modelSelector.selectedSegmentIndex
+        let selectedTitle = modelSelector.titleForSegment(at: selectedIndex)
+        //client.trainModel(selectedTitle)
+    }
+    
+    @IBAction func predictModel(_ sender: Any) {
+        //client.predictModel()
     }
     
 }
