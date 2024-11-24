@@ -33,8 +33,6 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
     // operation queues
     //let calibrationOperationQueue = OperationQueue()
 
-    // TODO: relace in storyboard....@IBOutlet wek var captureButton: UIButton!
-    
     
     // Photo capture properties
     var captureSession: AVCaptureSession!
@@ -42,16 +40,20 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
     var previewLayer: AVCaptureVideoPreviewLayer!
     var isCameraRunning = false // To track the camera state
 
+    var objDetectMenuItems: [String] = []
 
     // state variables
     var isCalibrating = false
 
     // User Interface properties
-    @IBOutlet weak var dsidLabel: UILabel!
     @IBOutlet weak var ipTextField: UITextField!
     @IBOutlet weak var capturedImageView: UIImageView!
-    @IBOutlet weak var Calibrate: UIButton!
     
+    @IBOutlet weak var StartStopCamera: UIButton!
+    @IBOutlet weak var objDetectPullDown: UIButton!
+    @IBOutlet weak var newObjToDetect: UITextField!
+
+    @IBOutlet weak var modelSelector: UISegmentedControl!
     
     // MARK: Class Properties with Observers
     enum CalibrationStage:String {
@@ -76,7 +78,7 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
         capturedImageView.isHidden = true // Hide initially until a photo is cap
         
         // Set the button's initial title
-         Calibrate.setTitle("Start Camera", for: .normal)
+        StartStopCamera.setTitle("Start Camera", for: .normal)
 
         // use delegation for interacting with client
         //client.delegate = self
@@ -84,7 +86,80 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
 
         //ipTextField.delegate = self
         //ipTextField.text = client.server_ip
+        
+        newObjToDetect.delegate = self
+        // Set up the initial menu
+        updateMenu(with: [])
 
+    }
+
+    
+    // Update the pull-down menu dynamically
+     func updateMenu(with items: [String]) {
+         var menuActions: [UIAction] = []
+
+         if items.isEmpty {
+             let defaultAction = UIAction(title: "No options available", handler: { _ in
+                 print("No options available selected")
+             })
+             menuActions.append(defaultAction)
+         } else {
+             for item in items {
+                 let action = UIAction(title: item, handler: { _ in
+                     print("\(item) selected")
+                     self.updateButtonTitle(with: item)
+                 })
+                 menuActions.append(action)
+             }
+         }
+
+         let menu = UIMenu(title: "Options", children: menuActions)
+         objDetectPullDown.menu = menu
+         objDetectPullDown.showsMenuAsPrimaryAction = true
+     }
+    
+     func updateButtonTitle(with item: String) {
+            // Update the button's title to reflect the selected item
+            objDetectPullDown.setTitle(item, for: .normal)
+        }
+    
+    
+    // Process the input for menu items
+      func processMenuItem() {
+          guard let newItem = newObjToDetect.text, !newItem.isEmpty else {
+              print("No item entered")
+              return
+          }
+
+          // Prevent duplicate items
+          guard !objDetectMenuItems.contains(newItem) else {
+              print("Item already exists")
+              newObjToDetect.text = "" // Clear the text field
+              newObjToDetect.resignFirstResponder() // Dismiss the keyboard
+              return
+          }
+
+          // Add the new item and update the menu
+          objDetectMenuItems.append(newItem)
+          print("New item added: \(newItem)")
+          updateMenu(with: objDetectMenuItems)
+
+          // Clear the text field and dismiss the keyboard
+          newObjToDetect.text = ""
+          newObjToDetect.resignFirstResponder()
+      }
+    
+    @IBAction func modelSelectValueChanged(_ sender: UISegmentedControl) {
+        // Retrieve the selected index
+        let selectedIndex = sender.selectedSegmentIndex
+        
+        // Get the title of the selected segment (if needed)
+        let selectedTitle = sender.titleForSegment(at: selectedIndex)
+        
+        print("Selected Index: \(selectedIndex)")
+        print("Selected Title: \(selectedTitle ?? "None")")
+        
+        
     }
     
     // Photo capture button pressed. Capture photo
@@ -107,41 +182,78 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
             return
         }
         
+        // Convert the captured photo to UIImage
         if let photoData = photo.fileDataRepresentation(),
            let image = UIImage(data: photoData) {
-            DispatchQueue.main.async {
-                self.capturedImageView.image = image
-                self.capturedImageView.isHidden = false
-                
-                // Stop the camera after capturing the photo
-                self.stopCamera()
-                self.restoreUI() // Restore the initial UI state
+            
+            // Resize the image to 512x512
+            let targetSize = CGSize(width: 512, height: 512)
+            let resizedImage = resizeImage(image: image, targetSize: targetSize)
+            
+            // Convert UIImage to JPEG data
+            if let jpegData = resizedImage?.jpegData(compressionQuality: 1.0) { // Compression quality: 1.0 = maximum quality
+                // Save JPEG data to disk or use it as needed
+                saveJPEGToDisk(data: jpegData) // Optional function to save
+                DispatchQueue.main.async {
+                    // self.capturedImageView.image = image
+                    self.capturedImageView.image = resizedImage
+                    self.capturedImageView.isHidden = false
+                    
+                    // Stop the camera after capturing the photo
+                    self.stopCamera()
+                    self.restoreUI() // Restore the initial UI state
+                }
+            } else {
+                print("Error converting image to JPEG format")
             }
         }
     }
     
+    func resizeImage(image: UIImage, targetSize: CGSize) -> UIImage? {
+        let renderer = UIGraphicsImageRenderer(size: targetSize)
+        return renderer.image { _ in
+            image.draw(in: CGRect(origin: .zero, size: targetSize))
+        }
+    }
+    
+    func saveJPEGToDisk(data: Data) {
+        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let filePath = documentsPath.appendingPathComponent("captured_photo.jpg")
+        
+        do {
+            try data.write(to: filePath)
+            print("JPEG saved to: \(filePath)")
+        } catch {
+            print("Error saving JPEG to disk: \(error.localizedDescription)")
+        }
+    }
+
     
     // MARK:
     // Allow the user to change the IP via text field.
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        if let ipText = ipTextField.text, !ipText.isEmpty {
-            //client.setServerIp(ip: ipText)
-            //print("IP set to ", client.server_ip)
-        } else {
-            print("New IP is nil or empty")
+        if textField == ipTextField{
+            if let ipText = ipTextField.text, !ipText.isEmpty {
+                //client.setServerIp(ip: ipText)
+                //print("IP set to ", client.server_ip)
+            } else {
+                print("New IP is nil or empty")
+            }
+            ipTextField.resignFirstResponder()
+        } else if textField == newObjToDetect {
+            processMenuItem()
+            textField.resignFirstResponder() // Dismiss the keyboard
         }
-
-        ipTextField.resignFirstResponder()
         return true
     }
 
     //MARK: UI Buttons
-    @IBAction func getDataSetId(_ sender: AnyObject) {
+  //  @IBAction func getDataSetId(_ sender: AnyObject) {
         //client.getNewDsid() // protocol used to update dsid
-    }
+  //  }
 
-    @IBAction func startCalibration(_ sender: AnyObject) {
-        //nextCalibrationStage() // kick off the calibration stages
+    
+    @IBAction func startStopCameraOps(_ sender: Any) {
         if isCameraRunning {   // If Camera is active, stop camera and restore UI
             stopCamera()
             restoreUI()
@@ -149,6 +261,7 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
             startCamera()      //If Camera not active, start camera
         }
     }
+    
     
     func startCamera() {
         // Initialize the capture session if not already initialized
@@ -191,7 +304,7 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
             DispatchQueue.main.async {
                 // Update UI-related elements on the main thread
                 self.isCameraRunning = true
-                self.Calibrate.setTitle("Stop Camera", for: .normal)
+                self.StartStopCamera.setTitle("Stop Camera", for: .normal)
                 self.capturedImageView.isHidden = true // Hide the image view when the camera starts
             }
         }
@@ -201,7 +314,7 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
         // Stop the capture session
         captureSession.stopRunning()
         isCameraRunning = false
-        Calibrate.setTitle("Start Camera", for: .normal)
+        StartStopCamera.setTitle("Start Camera", for: .normal)
         
         // Remove the preview layer to restore the initial background/UI
         if previewLayer != nil {
@@ -218,7 +331,15 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
     }
 
     @IBAction func makeModel(_ sender: AnyObject) {
-        //client.trainModel()
+        let selectedIndex = modelSelector.selectedSegmentIndex
+        let selectedTitle = modelSelector.titleForSegment(at: selectedIndex)
+        //client.trainModel(selectedTitle)
+    }
+    
+    @IBAction func predictModel(_ sender: Any) {
+        let selectedIndex = modelSelector.selectedSegmentIndex
+        let selectedTitle = modelSelector.titleForSegment(at: selectedIndex)
+        //client.predictModel()
     }
     
 }
@@ -231,7 +352,7 @@ extension ViewController {
         DispatchQueue.main.async{
             // update label when set
            // self.dsidLabel.layer.add(self.animation, forKey: nil)
-            self.dsidLabel.text = "Current DSID: \(newDsid)"
+            //self.dsidLabel.text = "Current DSID: \(newDsid)"
         }
     }
 
