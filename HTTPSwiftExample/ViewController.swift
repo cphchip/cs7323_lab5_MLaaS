@@ -86,82 +86,67 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
         //ipTextField.text = client.server_ip
         
         newObjToDetect.delegate = self
-        setupInitialMenu()
-
-    }
-    
-//    @IBAction func addItemObjToDetectTapped(_ sender: UIButton) {
-//        guard let newItem = newObjToDetect.text, !newItem.isEmpty else {
-//            print("No item entered")
-//            return
-//        }
-//        print("newItem added: \(newItem)")
-//        // Append the new item to the menu dynamically
-//        objDetectMenuItems.append(newItem)
-//        updateMenu(with: objDetectMenuItems)
-//
-//        // Clear the text field
-//        newObjToDetect.text = ""
-//    }
-    @IBAction func addItemObjToDetectTapped(_ sender: UIButton) {
-        // Handle "Add Item" button tap
-           guard let newItem = newObjToDetect.text, !newItem.isEmpty else { return }
-
-           // Add item and update menu
-            objDetectMenuItems.append(newItem)
-            updateMenu(with: objDetectMenuItems)
-
-           // Clear text field and dismiss keyboard
-            newObjToDetect.text = ""
-            //newObjToDetect.resignFirstResponder()
-    }
-    
-    //@IBAction func addItemObjToDetectTapped(_ sender: UITextField) {
-//        
-//        guard let newItem = newObjToDetect.text, !newItem.isEmpty else {
-//            print("No item entered")
-//            return
-//        }
-//        print("newItem added: \(newItem)")
-//        // Append the new item to the menu dynamically
-//        objDetectMenuItems.append(newItem)
-//        updateMenu(with: objDetectMenuItems)
-//
-//        // Clear the text field
-//        newObjToDetect.text = ""
-   // }
-    
-    
-    
-    func updateMenu(with items: [String]) {
-        print("Updating menu with items: \(items)")
-        
-        guard !items.isEmpty else {
-            print("No items to add to menu")
-            return
-        }
-
-        var menuActions: [UIAction] = []
-
-        for item in items {
-            let action = UIAction(title: item, handler: { _ in
-                print("\(item) selected")
-            })
-            menuActions.append(action)
-        }
-
-        // Create and assign the new menu
-        let menu = UIMenu(title: "Options", children: menuActions)
-        objDetectPullDown.menu = menu
-        objDetectPullDown.showsMenuAsPrimaryAction = true
-
-        print("Menu updated successfully")
-    }
-
-    private func setupInitialMenu() {
-        // Optional: Set an initial menu
+        // Set up the initial menu
         updateMenu(with: [])
+
     }
+
+    
+    // Update the pull-down menu dynamically
+     func updateMenu(with items: [String]) {
+         var menuActions: [UIAction] = []
+
+         if items.isEmpty {
+             let defaultAction = UIAction(title: "No options available", handler: { _ in
+                 print("No options available selected")
+             })
+             menuActions.append(defaultAction)
+         } else {
+             for item in items {
+                 let action = UIAction(title: item, handler: { _ in
+                     print("\(item) selected")
+                     self.updateButtonTitle(with: item)
+                 })
+                 menuActions.append(action)
+             }
+         }
+
+         let menu = UIMenu(title: "Options", children: menuActions)
+         objDetectPullDown.menu = menu
+         objDetectPullDown.showsMenuAsPrimaryAction = true
+     }
+    
+     func updateButtonTitle(with item: String) {
+            // Update the button's title to reflect the selected item
+            objDetectPullDown.setTitle(item, for: .normal)
+        }
+    
+    
+    // Process the input for menu items
+      func processMenuItem() {
+          guard let newItem = newObjToDetect.text, !newItem.isEmpty else {
+              print("No item entered")
+              return
+          }
+
+          // Prevent duplicate items
+          guard !objDetectMenuItems.contains(newItem) else {
+              print("Item already exists")
+              newObjToDetect.text = "" // Clear the text field
+              newObjToDetect.resignFirstResponder() // Dismiss the keyboard
+              return
+          }
+
+          // Add the new item and update the menu
+          objDetectMenuItems.append(newItem)
+          print("New item added: \(newItem)")
+          updateMenu(with: objDetectMenuItems)
+
+          // Clear the text field and dismiss the keyboard
+          newObjToDetect.text = ""
+          newObjToDetect.resignFirstResponder()
+      }
+
     
     
     
@@ -231,14 +216,9 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
                 print("New IP is nil or empty")
             }
             ipTextField.resignFirstResponder()
-        } else if textField == newObjToDetect{
-            
-            if let newDetectObj = newObjToDetect.text, !newDetectObj.isEmpty {
-                print("newDetectObj= \(newDetectObj)")
-            } else {
-                print("newDetectObj is nil or empty")
-            }
-            
+        } else if textField == newObjToDetect {
+            processMenuItem()
+            textField.resignFirstResponder() // Dismiss the keyboard
         }
         return true
     }
@@ -248,15 +228,6 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
         //client.getNewDsid() // protocol used to update dsid
   //  }
 
-//    @IBAction func startCalibration(_ sender: AnyObject) {
-//        //nextCalibrationStage() // kick off the calibration stages
-//        if isCameraRunning {   // If Camera is active, stop camera and restore UI
-//            stopCamera()
-//            restoreUI()
-//        } else {
-//            startCamera()      //If Camera not active, start camera
-//        }
-//    }
     
     @IBAction func startStopCameraOps(_ sender: Any) {
         if isCameraRunning {   // If Camera is active, stop camera and restore UI
