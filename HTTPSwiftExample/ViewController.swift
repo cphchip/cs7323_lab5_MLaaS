@@ -53,7 +53,7 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
     @IBOutlet weak var StartStopCamera: UIButton!
     @IBOutlet weak var objDetectPullDown: UIButton!
     @IBOutlet weak var newObjToDetect: UITextField!
-
+    @IBOutlet weak var model_Eval_Info: UITextField!
     @IBOutlet weak var modelSelector: UISegmentedControl!
     
     // MARK: Class Properties with Observers
@@ -87,6 +87,8 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
 
         ipTextField.delegate = self
         ipTextField.text = client.server_ip
+        
+        model_Eval_Info.delegate = self
         
         newObjToDetect.delegate = self
         // Set up the initial menu
@@ -243,7 +245,9 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
             ipTextField.resignFirstResponder()
         } else if textField == newObjToDetect {
             processMenuItem()
-            textField.resignFirstResponder() // Dismiss the keyboard
+            newObjToDetect.resignFirstResponder() // Dismiss the keyboard
+        } else if textField == model_Eval_Info {
+            model_Eval_Info.resignFirstResponder() // Dismiss the keyboard
         }
         return true
     }
