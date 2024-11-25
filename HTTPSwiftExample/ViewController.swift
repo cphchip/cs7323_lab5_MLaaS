@@ -49,6 +49,7 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
     @IBOutlet weak var ipTextField: UITextField!
     @IBOutlet weak var capturedImageView: UIImageView!
     
+    @IBOutlet weak var cameraFeedView: UIView!
     @IBOutlet weak var StartStopCamera: UIButton!
     @IBOutlet weak var objDetectPullDown: UIButton!
     @IBOutlet weak var newObjToDetect: UITextField!
@@ -294,8 +295,10 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
         if previewLayer == nil {
             previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
             previewLayer.videoGravity = .resizeAspectFill
-            previewLayer.frame = view.bounds
-            view.layer.insertSublayer(previewLayer, at: 0)
+            //previewLayer.frame = view.bounds
+            //view.layer.insertSublayer(previewLayer, at: 0)
+            previewLayer.frame = cameraFeedView.bounds //Match the size of the UIView
+            cameraFeedView.layer.addSublayer(previewLayer)
         }
         
         // Start the capture session on a background thread
