@@ -141,7 +141,7 @@ print("Shape of y_test:", y_test.shape)
 model = RandomForestClassifier(n_estimators=100, max_depth=10, random_state=42)
 model.fit(X_train_pca, y_train)
 
-print("Training complete!")
+print("Random Forest Training complete!")
 
 # Test the model
 y_pred = model.predict(X_test_pca)

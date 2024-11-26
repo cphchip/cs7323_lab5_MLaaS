@@ -71,7 +71,8 @@ from sklearn.metrics import accuracy_score
 from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestClassifier
 
-from joblib import dump, load, joblib
+from joblib import dump, load
+import joblib
 
 
 

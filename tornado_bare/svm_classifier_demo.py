@@ -131,7 +131,7 @@ print("Shape of y_test:", y_test.shape)
 svc = SVC()
 svc.fit(X_train_pca, y_train)
 
-print("Training complete!")
+print("SVM Training complete!")
 
 y_pred = svc.predict(X_test_pca)
 print("Predictions:", y_pred)
