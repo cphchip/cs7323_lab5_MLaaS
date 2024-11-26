@@ -91,16 +91,12 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, UITextFiel
         newObjToDetect.delegate = self
         
         //Retrieve existing labels
-        //test
-        client.addLabel("car")
-        client.addLabel("truck")
+        sleep(2)
         let labelDataSets = client.getLabels()
     
         //updateMenu(with: [])
         // Extract labels from array of DataSets - [Dataset]
         let labels = labelDataSets.map { $0.label }
-        print(labels)
-        
         // Set up the initial menu
         updateMenu(with: labels)
 
@@ -210,7 +206,7 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, UITextFiel
             // Convert UIImage to JPEG data
             if let jpegData = resizedImage?.jpegData(compressionQuality: 1.0) { // Compression quality: 1.0 = maximum quality
                 // Save JPEG data to disk or use it as needed
-                saveJPEGToDisk(data: jpegData)
+                //saveJPEGToDisk(data: jpegData)
                 
                 //save current resized image to send to training/prediction tasks
                 currentResizedImage = UIImage(data: jpegData) ?? UIImage() // if error, provide empty image
@@ -355,6 +351,7 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, UITextFiel
         let selectedTitle = modelSelector.titleForSegment(at: selectedIndex) ?? "Unkown"
         
         print("Train BTN: model sel = \(selectedTitle)")
+        sleep(2)
         
         if let dsid = client.getLabel(byName: currentObjectSelected)?.dsid {
             print("VC-trainModel selected: dsid = \(dsid)")
@@ -370,6 +367,7 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, UITextFiel
         let selectedTitle = modelSelector.titleForSegment(at: selectedIndex) ?? "Unkown"
         
         print("predictModel BTN: model sel = \(selectedTitle)")
+        sleep(2)
         
         if let dsid = client.getLabel(byName: currentObjectSelected)?.dsid {
             print("VC-tpredictModel selected: dsid = \(dsid)")
