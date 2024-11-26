@@ -15,7 +15,7 @@
 import UIKit
 import AVFoundation
 
-class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDelegate, UITextFieldDelegate {
+class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, UITextFieldDelegate {
     
     //Ref Cite:  ChatGPT
     // This section of code was generated with the assistance of ChatGPT, an AI language model by OpenAI.
@@ -28,7 +28,7 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
     // MARK: Class Properties
     
     // interacting with server
-    let client = MlaasModel() // how we will interact with the server
+    let client = MLClient() // how we will interact with the server
     
     // operation queues
     //let calibrationOperationQueue = OperationQueue()
@@ -42,6 +42,8 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
 
     var objDetectMenuItems: [String] = []
     var imageCount = 0
+    var currentObjectSelected = "none"
+    var currentResizedImage: UIImage!
 
     // state variables
     var isCalibrating = false
@@ -84,11 +86,23 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
 
         // use delegation for interacting with client
         client.delegate = self
-        client.updateDsid(5) // set default dsid to start with
-
+        
+        // delegate for new ObjectToDetect textFied
         newObjToDetect.delegate = self
+        
+        //Retrieve existing labels
+        //test
+        client.addLabel("car")
+        client.addLabel("truck")
+        let labelDataSets = client.getLabels()
+    
+        //updateMenu(with: [])
+        // Extract labels from array of DataSets - [Dataset]
+        let labels = labelDataSets.map { $0.label }
+        print(labels)
+        
         // Set up the initial menu
-        updateMenu(with: [])
+        updateMenu(with: labels)
 
     }
 
@@ -120,6 +134,7 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
      func updateButtonTitle(with item: String) {
             // Update the button's title to reflect the selected item
             objDetectPullDown.setTitle(item, for: .normal)
+            currentObjectSelected = item
         }
     
     
@@ -143,6 +158,9 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
           print("New item added: \(newItem)")
           updateMenu(with: objDetectMenuItems)
 
+          // Add the new item to the MLClient
+          client.addLabel(newItem)
+          
           // Clear the text field and dismiss the keyboard
           newObjToDetect.text = ""
           newObjToDetect.resignFirstResponder()
@@ -192,7 +210,10 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
             // Convert UIImage to JPEG data
             if let jpegData = resizedImage?.jpegData(compressionQuality: 1.0) { // Compression quality: 1.0 = maximum quality
                 // Save JPEG data to disk or use it as needed
-                saveJPEGToDisk(data: jpegData) // Optional function to save
+                saveJPEGToDisk(data: jpegData)
+                
+                //save current resized image to send to training/prediction tasks
+                currentResizedImage = UIImage(data: jpegData) ?? UIImage() // if error, provide empty image
                 
                 // Increment counter
                 imageCount+=1
@@ -247,11 +268,6 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
             newObjToDetect.resignFirstResponder() // Dismiss the keyboard
         }
         return true
-    }
-
-//    MARK: UI Buttons
-    @IBAction func getDataSetId(_ sender: AnyObject) {
-        client.getNewDsid() // protocol used to update dsid
     }
 
     
@@ -336,40 +352,62 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
 
     @IBAction func makeModel(_ sender: AnyObject) {
         let selectedIndex = modelSelector.selectedSegmentIndex
-        let selectedTitle = modelSelector.titleForSegment(at: selectedIndex)
+        let selectedTitle = modelSelector.titleForSegment(at: selectedIndex) ?? "Unkown"
         //client.trainModel(selectedTitle)
+        if let dsid = client.getLabel(byName: currentObjectSelected)?.dsid {
+            print("VC-trainModel selected: dsid = \(dsid)")
+            client.trainModel(dsid: dsid, model_t: selectedTitle)
+        }
+            
+       
     }
     
     @IBAction func predictModel(_ sender: Any) {
         let selectedIndex = modelSelector.selectedSegmentIndex
-        let selectedTitle = modelSelector.titleForSegment(at: selectedIndex)
+        let selectedTitle = modelSelector.titleForSegment(at: selectedIndex) ?? "Unkown"
         //client.predictModel()
+        if let dsid = client.getLabel(byName: currentObjectSelected)?.dsid {
+            print("VC-tpredictModel selected: dsid = \(dsid)")
+            client.predict(image: currentResizedImage, dsid: dsid, model_t: selectedTitle)
+        }
+        
     }
     
 }
 
     
 //MARK: Protocol Required Functions
-extension ViewController {
-    func updateDsid(_ newDsid:Int){
-        // delegate function completion handler
-        DispatchQueue.main.async{
-            // update label when set
-           // self.dsidLabel.layer.add(self.animation, forKey: nil)
-            //self.dsidLabel.text = "Current DSID: \(newDsid)"
+extension ViewController: MLClientProtocol {
+
+    func didFetchLabels(labels: [Dataset]) {
+        print(labels)
+    }
+
+    func labelAdded(label: Dataset?, error: APIError?) {
+        if let error = error {
+            print(error.localizedDescription)
+        } else {
+            print("Label added: \(label?.label ?? "")")
         }
     }
 
-    func receivedPrediction(_ prediction:[String:Any]){
-        if let labelResponse = prediction["prediction"] as? String{
-            print(labelResponse)
-            //self.displayLabelResponse(labelResponse)
-        }
-        else{
-            print("Received prediction data without label.")
+    func uploadImageComplete(success: Bool, errMsg: String?) {
+        if success {
+            print("Image uploaded successfully")
+        } else {
+            print("Image upload failed: \(errMsg ?? "")")
         }
     }
+
+    func modelTrainingComplete(result: [String: Any]?, error: APIError?) {
+        print("Model training complete: \(result)")
+    }
+
+    func predictionComplete(result: [String: Any]?, error: APIError?) {
+        print("Prediction complete: \(result)")
+    }
 }
+
 
 
 
