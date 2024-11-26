@@ -241,28 +241,18 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
     
     // MARK:
     // Allow the user to change the IP via text field.
-//    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-//        if textField == ipTextField{
-//            if let ipText = ipTextField.text, !ipText.isEmpty {
-//                //client.setServerIp(ip: ipText)
-//                //print("IP set to ", client.server_ip)
-//            } else {
-//                print("New IP is nil or empty")
-//            }
-//            ipTextField.resignFirstResponder()
-//        } else if textField == newObjToDetect {
-//            processMenuItem()
-//            newObjToDetect.resignFirstResponder() // Dismiss the keyboard
-//        } else if textField == model_Eval_Info {
-//            model_Eval_Info.resignFirstResponder() // Dismiss the keyboard
-//        }
-//        return true
-//    }
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        if textField == newObjToDetect {
+            processMenuItem()
+            newObjToDetect.resignFirstResponder() // Dismiss the keyboard
+        }
+        return true
+    }
 
-    //MARK: UI Buttons
-  //  @IBAction func getDataSetId(_ sender: AnyObject) {
-        //client.getNewDsid() // protocol used to update dsid
-  //  }
+//    MARK: UI Buttons
+    @IBAction func getDataSetId(_ sender: AnyObject) {
+        client.getNewDsid() // protocol used to update dsid
+    }
 
     
     @IBAction func startStopCameraOps(_ sender: Any) {
