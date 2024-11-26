@@ -41,6 +41,7 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
     var isCameraRunning = false // To track the camera state
 
     var objDetectMenuItems: [String] = []
+    var imageCount = 0
 
     // state variables
     var isCalibrating = false
@@ -48,9 +49,10 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
     // User Interface properties
     @IBOutlet weak var ipTextField: UITextField!
     @IBOutlet weak var capturedImageView: UIImageView!
-    
     @IBOutlet weak var cameraFeedView: UIView!
     @IBOutlet weak var StartStopCamera: UIButton!
+    @IBOutlet weak var imgCaptureButton: UIButton!
+    @IBOutlet weak var imageCountLabel: UILabel!
     @IBOutlet weak var objDetectPullDown: UIButton!
     @IBOutlet weak var newObjToDetect: UITextField!
     @IBOutlet weak var model_Eval_Info: UITextField!
@@ -197,6 +199,17 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
             if let jpegData = resizedImage?.jpegData(compressionQuality: 1.0) { // Compression quality: 1.0 = maximum quality
                 // Save JPEG data to disk or use it as needed
                 saveJPEGToDisk(data: jpegData) // Optional function to save
+                
+                // Increment counter
+                imageCount+=1
+                if imageCount <= 5 {
+                    imageCountLabel.text = "\(imageCount) / 5"
+                        
+//                } else if imageCount > 5 {
+//                    imgCaptureButton.isEnabled = false
+//                    imgCaptureButton.alpha = 0.1
+                }
+                        
                 DispatchQueue.main.async {
                     // self.capturedImageView.image = image
                     self.capturedImageView.image = resizedImage
