@@ -167,10 +167,19 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, UITextFiel
         let selectedIndex = sender.selectedSegmentIndex
         
         // Get the title of the selected segment (if needed)
-        let selectedTitle = sender.titleForSegment(at: selectedIndex)
+//        let selectedTitle = sender.titleForSegment(at: selectedIndex)
+        let selectedTitle: String
+        switch selectedIndex {
+        case 0:
+            selectedTitle = "svc"
+        case 1:
+            selectedTitle = "rf"
+        default:
+            selectedTitle = "Unknown"
+        }
         
         print("Selected Index: \(selectedIndex)")
-        print("Selected Title: \(selectedTitle ?? "None")")
+        print("Selected Title: \(selectedTitle)")
         
         
     }
@@ -348,7 +357,16 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, UITextFiel
 
     @IBAction func makeModel(_ sender: AnyObject) {
         let selectedIndex = modelSelector.selectedSegmentIndex
-        let selectedTitle = modelSelector.titleForSegment(at: selectedIndex) ?? "Unkown"
+//        let selectedTitle = modelSelector.titleForSegment(at: selectedIndex) ?? "Unkown"
+        let selectedTitle: String
+        switch selectedIndex {
+        case 0:
+            selectedTitle = "svc"
+        case 1:
+            selectedTitle = "rf"
+        default:
+            selectedTitle = "Unknown"
+        }
         
         print("Train BTN: model sel = \(selectedTitle)")
         sleep(2)
@@ -364,7 +382,16 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, UITextFiel
     
     @IBAction func predictModel(_ sender: Any) {
         let selectedIndex = modelSelector.selectedSegmentIndex
-        let selectedTitle = modelSelector.titleForSegment(at: selectedIndex) ?? "Unkown"
+//        let selectedTitle = modelSelector.titleForSegment(at: selectedIndex) ?? "Unkown"
+        let selectedTitle: String
+        switch selectedIndex {
+        case 0:
+            selectedTitle = "svc"
+        case 1:
+            selectedTitle = "rf"
+        default:
+            selectedTitle = "Unknown"
+        }
         
         print("predictModel BTN: model sel = \(selectedTitle)")
         sleep(2)
