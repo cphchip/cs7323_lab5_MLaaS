@@ -131,7 +131,7 @@
                                 <rect key="frame" x="0.0" y="638" width="402" height="236"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="252" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vbq-k7-yWj">
-                                        <rect key="frame" x="253" y="0.0" width="125" height="60"/>
+                                        <rect key="frame" x="269" y="0.0" width="125" height="60"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="60" id="aZu-rS-pwD"/>
                                             <constraint firstAttribute="width" constant="125" id="eV8-Ht-orx"/>
@@ -145,7 +145,7 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Q83-th-e1u">
-                                        <rect key="frame" x="24" y="0.0" width="125" height="60"/>
+                                        <rect key="frame" x="8" y="0.0" width="125" height="60"/>
                                         <color key="backgroundColor" systemColor="lightTextColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="60" id="LfW-TK-Npo"/>
@@ -170,23 +170,34 @@
                                     <segmentedControl opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="252" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="N9b-C0-gdn">
                                         <rect key="frame" x="46.666666666666657" y="148" width="309" height="32"/>
                                         <segments>
-                                            <segment title="Svc Model"/>
+                                            <segment title="SVC Model"/>
                                             <segment title="Random Forest Model"/>
                                         </segments>
                                         <connections>
                                             <action selector="modelSelectValueChanged:" destination="RtX-8b-nDc" eventType="valueChanged" id="5la-ia-sSx"/>
                                         </connections>
                                     </segmentedControl>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0 / 5" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gqI-fg-yDm">
+                                        <rect key="frame" x="180" y="0.0" width="42" height="60"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="42" id="7q8-Pf-XGw"/>
+                                            <constraint firstAttribute="height" constant="60" id="hKD-ON-kuX"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="20"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
                                 </subviews>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="bottom" secondItem="Cx5-S5-QUO" secondAttribute="bottom" constant="15" id="21K-g2-xwt"/>
                                     <constraint firstItem="Q83-th-e1u" firstAttribute="top" secondItem="PRE-AD-cCU" secondAttribute="top" id="5RG-qC-gPb"/>
-                                    <constraint firstItem="Q83-th-e1u" firstAttribute="leading" secondItem="PRE-AD-cCU" secondAttribute="leading" constant="24" id="7rS-Dg-DYp"/>
+                                    <constraint firstItem="Q83-th-e1u" firstAttribute="leading" secondItem="PRE-AD-cCU" secondAttribute="leading" constant="8" id="7rS-Dg-DYp"/>
                                     <constraint firstItem="N9b-C0-gdn" firstAttribute="centerX" secondItem="PRE-AD-cCU" secondAttribute="centerX" id="FZW-9Q-CYJ"/>
+                                    <constraint firstItem="gqI-fg-yDm" firstAttribute="centerX" secondItem="PRE-AD-cCU" secondAttribute="centerX" id="GiL-FM-gJN"/>
                                     <constraint firstItem="Cx5-S5-QUO" firstAttribute="centerX" secondItem="PRE-AD-cCU" secondAttribute="centerX" id="KAu-WH-3m1"/>
                                     <constraint firstItem="Cx5-S5-QUO" firstAttribute="width" secondItem="PRE-AD-cCU" secondAttribute="width" multiplier="9:10" id="UGU-2D-g8v"/>
-                                    <constraint firstAttribute="trailing" secondItem="Vbq-k7-yWj" secondAttribute="trailing" constant="24" id="VgB-eT-7b7"/>
+                                    <constraint firstAttribute="trailing" secondItem="Vbq-k7-yWj" secondAttribute="trailing" constant="8" id="VgB-eT-7b7"/>
                                     <constraint firstItem="Vbq-k7-yWj" firstAttribute="top" secondItem="PRE-AD-cCU" secondAttribute="top" id="gNF-il-FUK"/>
                                     <constraint firstItem="Cx5-S5-QUO" firstAttribute="top" secondItem="N9b-C0-gdn" secondAttribute="bottom" constant="8" id="vFP-sW-0YH"/>
                                 </constraints>
@@ -206,6 +217,7 @@
                             <constraint firstItem="PY3-7Z-mBZ" firstAttribute="width" secondItem="b43-BF-2Q9" secondAttribute="width" id="ezX-yN-fMt"/>
                             <constraint firstAttribute="trailing" secondItem="PY3-7Z-mBZ" secondAttribute="trailing" id="lrR-96-mSH"/>
                             <constraint firstItem="PRE-AD-cCU" firstAttribute="top" secondItem="PY3-7Z-mBZ" secondAttribute="bottom" id="opQ-hj-1XF"/>
+                            <constraint firstItem="gqI-fg-yDm" firstAttribute="top" secondItem="PY3-7Z-mBZ" secondAttribute="bottom" id="p5f-u6-Xag"/>
                             <constraint firstItem="PRE-AD-cCU" firstAttribute="centerX" secondItem="b43-BF-2Q9" secondAttribute="centerX" id="qHB-N0-3kr"/>
                             <constraint firstItem="DzO-mG-87z" firstAttribute="top" secondItem="iRo-nk-vyU" secondAttribute="bottom" constant="0.6666666666666714" id="rOY-vx-zG3"/>
                             <constraint firstItem="3jK-vc-IU9" firstAttribute="centerX" secondItem="b43-BF-2Q9" secondAttribute="centerX" id="ryx-Uq-RDQ"/>
@@ -216,6 +228,8 @@
                         <outlet property="StartStopCamera" destination="Q83-th-e1u" id="F7x-p8-O90"/>
                         <outlet property="cameraFeedView" destination="PY3-7Z-mBZ" id="K8W-fw-hiJ"/>
                         <outlet property="capturedImageView" destination="kmq-xo-TVW" id="usg-Pm-TZH"/>
+                        <outlet property="imageCountLabel" destination="gqI-fg-yDm" id="5js-zF-dpn"/>
+                        <outlet property="imgCaptureButton" destination="Vbq-k7-yWj" id="Cj7-Tc-AJe"/>
                         <outlet property="ipTextField" destination="sYP-We-ZjB" id="tvZ-Tf-rRC"/>
                         <outlet property="modelSelector" destination="N9b-C0-gdn" id="QO2-5D-qwL"/>
                         <outlet property="model_Eval_Info" destination="Cx5-S5-QUO" id="Wke-ek-gOU"/>
@@ -225,7 +239,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="cbn-1t-Ir5" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1132.8358208955224" y="263.61556064073227"/>
+            <point key="canvasLocation" x="1132.5" y="261.97183098591552"/>
         </scene>
     </scenes>
     <resources>
