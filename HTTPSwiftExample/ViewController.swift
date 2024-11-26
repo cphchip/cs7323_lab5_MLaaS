@@ -47,15 +47,14 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
     var isCalibrating = false
 
     // User Interface properties
-    @IBOutlet weak var ipTextField: UITextField!
     @IBOutlet weak var capturedImageView: UIImageView!
     @IBOutlet weak var cameraFeedView: UIView!
     @IBOutlet weak var StartStopCamera: UIButton!
     @IBOutlet weak var imgCaptureButton: UIButton!
     @IBOutlet weak var imageCountLabel: UILabel!
+    @IBOutlet weak var modelFeedbackLabel: UILabel!
     @IBOutlet weak var objDetectPullDown: UIButton!
     @IBOutlet weak var newObjToDetect: UITextField!
-    @IBOutlet weak var model_Eval_Info: UITextField!
     @IBOutlet weak var modelSelector: UISegmentedControl!
     
     // MARK: Class Properties with Observers
@@ -87,11 +86,6 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
         client.delegate = self
         client.updateDsid(5) // set default dsid to start with
 
-        ipTextField.delegate = self
-        ipTextField.text = client.server_ip
-        
-        model_Eval_Info.delegate = self
-        
         newObjToDetect.delegate = self
         // Set up the initial menu
         updateMenu(with: [])
@@ -247,23 +241,23 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, ClientDele
     
     // MARK:
     // Allow the user to change the IP via text field.
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        if textField == ipTextField{
-            if let ipText = ipTextField.text, !ipText.isEmpty {
-                //client.setServerIp(ip: ipText)
-                //print("IP set to ", client.server_ip)
-            } else {
-                print("New IP is nil or empty")
-            }
-            ipTextField.resignFirstResponder()
-        } else if textField == newObjToDetect {
-            processMenuItem()
-            newObjToDetect.resignFirstResponder() // Dismiss the keyboard
-        } else if textField == model_Eval_Info {
-            model_Eval_Info.resignFirstResponder() // Dismiss the keyboard
-        }
-        return true
-    }
+//    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+//        if textField == ipTextField{
+//            if let ipText = ipTextField.text, !ipText.isEmpty {
+//                //client.setServerIp(ip: ipText)
+//                //print("IP set to ", client.server_ip)
+//            } else {
+//                print("New IP is nil or empty")
+//            }
+//            ipTextField.resignFirstResponder()
+//        } else if textField == newObjToDetect {
+//            processMenuItem()
+//            newObjToDetect.resignFirstResponder() // Dismiss the keyboard
+//        } else if textField == model_Eval_Info {
+//            model_Eval_Info.resignFirstResponder() // Dismiss the keyboard
+//        }
+//        return true
+//    }
 
     //MARK: UI Buttons
   //  @IBAction func getDataSetId(_ sender: AnyObject) {

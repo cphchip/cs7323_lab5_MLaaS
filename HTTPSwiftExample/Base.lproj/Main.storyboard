@@ -85,16 +85,6 @@
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="filled" title="Object menu"/>
                                     </button>
-                                    <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="IP Address" borderStyle="roundedRect" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="sYP-We-ZjB">
-                                        <rect key="frame" x="82.666666666666686" y="162.66666666666666" width="237" height="34"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" constant="237" id="EtX-nJ-9Sj"/>
-                                            <constraint firstAttribute="height" constant="34" id="yEU-xC-Vwo"/>
-                                        </constraints>
-                                        <color key="textColor" systemColor="linkColor"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <textInputTraits key="textInputTraits" keyboardType="URL"/>
-                                    </textField>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hnx-72-uCy">
                                         <rect key="frame" x="314" y="98.666666666666686" width="80" height="60"/>
                                         <constraints>
@@ -115,10 +105,8 @@
                                 </subviews>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <constraints>
-                                    <constraint firstItem="sYP-We-ZjB" firstAttribute="top" secondItem="w1a-oL-f12" secondAttribute="bottom" constant="72" id="3Va-W7-q0w"/>
                                     <constraint firstItem="344-9E-JvP" firstAttribute="top" secondItem="w1a-oL-f12" secondAttribute="bottom" constant="8" id="8fL-Dv-rrC"/>
                                     <constraint firstAttribute="trailing" secondItem="hnx-72-uCy" secondAttribute="trailing" constant="8" id="PFY-8x-reQ"/>
-                                    <constraint firstItem="sYP-We-ZjB" firstAttribute="centerX" secondItem="3jK-vc-IU9" secondAttribute="centerX" id="PpD-Bd-hqR"/>
                                     <constraint firstItem="hnx-72-uCy" firstAttribute="top" secondItem="w1a-oL-f12" secondAttribute="bottom" constant="8" id="Uk2-jp-wwS"/>
                                     <constraint firstItem="3lc-Rd-6jP" firstAttribute="top" secondItem="w1a-oL-f12" secondAttribute="bottom" constant="8" id="W34-me-CtJ"/>
                                     <constraint firstItem="3lc-Rd-6jP" firstAttribute="leading" secondItem="3jK-vc-IU9" secondAttribute="leading" constant="8" id="div-fT-s5J"/>
@@ -162,11 +150,6 @@
                                             <action selector="startStopCameraOps:" destination="RtX-8b-nDc" eventType="touchUpInside" id="iCV-tO-eGL"/>
                                         </connections>
                                     </button>
-                                    <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" verticalHuggingPriority="253" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Cx5-S5-QUO">
-                                        <rect key="frame" x="20" y="187" width="362" height="34"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                        <textInputTraits key="textInputTraits"/>
-                                    </textField>
                                     <segmentedControl opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="252" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="N9b-C0-gdn">
                                         <rect key="frame" x="46.666666666666657" y="148" width="309" height="32"/>
                                         <segments>
@@ -187,19 +170,25 @@
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Model Feedback" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ztQ-UA-jCu">
+                                        <rect key="frame" x="20" y="187" width="362" height="21"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
                                 </subviews>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <constraints>
-                                    <constraint firstAttribute="bottom" secondItem="Cx5-S5-QUO" secondAttribute="bottom" constant="15" id="21K-g2-xwt"/>
+                                    <constraint firstItem="ztQ-UA-jCu" firstAttribute="width" secondItem="PRE-AD-cCU" secondAttribute="width" multiplier="9:10" id="2iD-zs-NpC"/>
                                     <constraint firstItem="Q83-th-e1u" firstAttribute="top" secondItem="PRE-AD-cCU" secondAttribute="top" id="5RG-qC-gPb"/>
                                     <constraint firstItem="Q83-th-e1u" firstAttribute="leading" secondItem="PRE-AD-cCU" secondAttribute="leading" constant="8" id="7rS-Dg-DYp"/>
                                     <constraint firstItem="N9b-C0-gdn" firstAttribute="centerX" secondItem="PRE-AD-cCU" secondAttribute="centerX" id="FZW-9Q-CYJ"/>
                                     <constraint firstItem="gqI-fg-yDm" firstAttribute="centerX" secondItem="PRE-AD-cCU" secondAttribute="centerX" id="GiL-FM-gJN"/>
-                                    <constraint firstItem="Cx5-S5-QUO" firstAttribute="centerX" secondItem="PRE-AD-cCU" secondAttribute="centerX" id="KAu-WH-3m1"/>
-                                    <constraint firstItem="Cx5-S5-QUO" firstAttribute="width" secondItem="PRE-AD-cCU" secondAttribute="width" multiplier="9:10" id="UGU-2D-g8v"/>
+                                    <constraint firstItem="ztQ-UA-jCu" firstAttribute="top" secondItem="N9b-C0-gdn" secondAttribute="bottom" constant="8" id="JXq-ib-0O4"/>
                                     <constraint firstAttribute="trailing" secondItem="Vbq-k7-yWj" secondAttribute="trailing" constant="8" id="VgB-eT-7b7"/>
+                                    <constraint firstAttribute="bottom" secondItem="N9b-C0-gdn" secondAttribute="bottom" constant="57" id="a6z-B6-q0k"/>
                                     <constraint firstItem="Vbq-k7-yWj" firstAttribute="top" secondItem="PRE-AD-cCU" secondAttribute="top" id="gNF-il-FUK"/>
-                                    <constraint firstItem="Cx5-S5-QUO" firstAttribute="top" secondItem="N9b-C0-gdn" secondAttribute="bottom" constant="8" id="vFP-sW-0YH"/>
+                                    <constraint firstItem="ztQ-UA-jCu" firstAttribute="centerX" secondItem="PRE-AD-cCU" secondAttribute="centerX" id="y4v-6j-5Tr"/>
                                 </constraints>
                             </view>
                         </subviews>
@@ -230,9 +219,8 @@
                         <outlet property="capturedImageView" destination="kmq-xo-TVW" id="usg-Pm-TZH"/>
                         <outlet property="imageCountLabel" destination="gqI-fg-yDm" id="5js-zF-dpn"/>
                         <outlet property="imgCaptureButton" destination="Vbq-k7-yWj" id="Cj7-Tc-AJe"/>
-                        <outlet property="ipTextField" destination="sYP-We-ZjB" id="tvZ-Tf-rRC"/>
+                        <outlet property="modelFeedbackLabel" destination="ztQ-UA-jCu" id="Fu0-Gg-2zp"/>
                         <outlet property="modelSelector" destination="N9b-C0-gdn" id="QO2-5D-qwL"/>
-                        <outlet property="model_Eval_Info" destination="Cx5-S5-QUO" id="Wke-ek-gOU"/>
                         <outlet property="newObjToDetect" destination="w1a-oL-f12" id="adS-FD-CUR"/>
                         <outlet property="objDetectPullDown" destination="344-9E-JvP" id="ILy-Ns-jW1"/>
                     </connections>
