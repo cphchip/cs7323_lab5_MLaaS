@@ -17,9 +17,10 @@ protocol MLClientProtocol {
 }
 
 class MLClient {
-    // localhost ip address 127.
+    
     private let API_BASE_ENDPOINT = "http://45.33.24.52:8000"
-
+    
+    private let API_TOKEN = Bundle.main.object(forInfoDictionaryKey: "API_TOKEN") as? String ?? ""
     public var delegate: MLClientProtocol?
 
     private var labels: [Dataset] = []
@@ -65,7 +66,8 @@ class MLClient {
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-
+        request.addValue(API_TOKEN, forHTTPHeaderField: "x-api-token")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         let task = URLSession.shared.dataTask(with: request) {
             data, response, error in
             // Handle network errors
@@ -122,14 +124,18 @@ class MLClient {
         return labels.first { $0.label == name }
     }
 
-    func fetchLabels() async -> [Dataset] {
+    private func fetchLabels() async -> [Dataset] {
         guard let url = URL(string: "\(API_BASE_ENDPOINT)/labels") else {
             print("Invalid URL")
             return []
         }
-
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.addValue(API_TOKEN, forHTTPHeaderField: "x-api-token")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         do {
-            let (data, response) = try await URLSession.shared.data(from: url)
+            let (data, response) = try await URLSession.shared.data(for: request)
             if let httpResponse = response as? HTTPURLResponse,
                 httpResponse.statusCode == 200
             {
@@ -170,7 +176,8 @@ class MLClient {
                         )
                     }
                 case .failure(let error):
-                    print("Error uploading image: \(error.localizedDescription)")
+                    print(
+                        "Error uploading image: \(error.localizedDescription)")
                     DispatchQueue.main.async {
                         self.delegate?.uploadImageComplete(
                             success: false, errMsg: error.localizedDescription
@@ -185,7 +192,8 @@ class MLClient {
         image: UIImage, dsid: Int,
         completion: @escaping (Result<String, APIError>) -> Void
     ) async {
-        guard let serverURL = URL(string: "\(API_BASE_ENDPOINT)/upload_image") else {
+        guard let serverURL = URL(string: "\(API_BASE_ENDPOINT)/upload_image")
+        else {
             completion(.failure(.invalidURL))
             return
         }
@@ -213,12 +221,17 @@ class MLClient {
             forHTTPHeaderField: "Content-Type"
         )
         request.httpBody = multipart.httpBody
-
+        
+        // add api token to the request
+        request.addValue(API_TOKEN, forHTTPHeaderField: "x-api-token")
+        
         // Send the request
         do {
-            let (data, response) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await URLSession.shared.data(
+                for: request)
             if let httpResponse = response as? HTTPURLResponse,
-               (200...299).contains(httpResponse.statusCode) {
+                (200...299).contains(httpResponse.statusCode)
+            {
                 let json = convertDataToDictionary(with: data)
                 let message = json["message"] as? String ?? "Upload successful"
                 completion(.success(message))
@@ -258,7 +271,9 @@ class MLClient {
                         }
                     }
                 case .failure(let error):
-                    print("Error requesting prediction: \(error.localizedDescription)")
+                    print(
+                        "Error requesting prediction: \(error.localizedDescription)"
+                    )
                 }
             }
         }
@@ -292,11 +307,12 @@ class MLClient {
         // Create the HTTP request
         var request = URLRequest(url: serverURL)
         request.httpMethod = "POST"
+        request.addValue(API_TOKEN, forHTTPHeaderField: "x-api-token")
         request.setValue(
             multipart.httpContentTypeHeadeValue,
             forHTTPHeaderField: "Content-Type")
         request.httpBody = multipart.httpBody
-
+        
         // Send the request
         do {
             let (data, response) = try await URLSession.shared.data(
@@ -333,7 +349,8 @@ class MLClient {
         }
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-
+        request.addValue(API_TOKEN, forHTTPHeaderField: "x-api-token")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         let task = URLSession.shared.dataTask(with: request) {
             data, response, error in
             if let error = error {
@@ -374,7 +391,11 @@ class MLClient {
                             completion(.success(result))
                             return
                         } else if status == "Failed" {
-                            completion(.failure(.taskFailed(json["result"] as? String ?? "\(json)")))
+                            completion(
+                                .failure(
+                                    .taskFailed(
+                                        json["result"] as? String ?? "\(json)"))
+                            )
                             return
                         } else {
                             // Task is still pending, wait and try again
@@ -434,7 +455,9 @@ class MLClient {
                         }
                     }
                 case .failure(let error):
-                    print("Error submitting training request: \(error.localizedDescription)")
+                    print(
+                        "Error submitting training request: \(error.localizedDescription)"
+                    )
                 }
             }
         }
@@ -454,7 +477,7 @@ class MLClient {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-
+        request.addValue(API_TOKEN, forHTTPHeaderField: "x-api-token")
         do {
             request.httpBody = try JSONEncoder().encode(trainReq)
         } catch {
@@ -539,5 +562,3 @@ class MLClient {
         }
     }
 }
-
-
