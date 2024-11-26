@@ -358,6 +358,7 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, UITextFiel
         
         if let dsid = client.getLabel(byName: currentObjectSelected)?.dsid {
             print("VC-trainModel selected: dsid = \(dsid)")
+            client.uploadImage(image: currentResizedImage, dsid: dsid)
             client.trainModel(dsid: dsid, model_t: selectedTitle)
         }
             
