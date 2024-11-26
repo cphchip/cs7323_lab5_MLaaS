@@ -18,7 +18,7 @@ protocol MLClientProtocol {
 
 class MLClient {
     // localhost ip address 127.
-    private let API_BASE_ENDPOINT = "http://10.0.0.23:8000"
+    private let API_BASE_ENDPOINT = "http://45.33.24.52:8000"
 
     public var delegate: MLClientProtocol?
 

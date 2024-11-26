@@ -24,8 +24,19 @@
 	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
+        <key>NSExceptionDomains</key>
+        <dict>
+            <key>45.33.24.52</key>
+            <dict>
+                <key>NSIncludesSubdomains</key>
+                <true/>
+                <key>NSTemporaryExceptionAllowsInsecureHTTPLoads</key>
+                <true/>
+            </dict>
+        </dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
+        
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>We need access to your camera to capture photos</string>
