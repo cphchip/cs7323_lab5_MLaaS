@@ -353,7 +353,9 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, UITextFiel
     @IBAction func makeModel(_ sender: AnyObject) {
         let selectedIndex = modelSelector.selectedSegmentIndex
         let selectedTitle = modelSelector.titleForSegment(at: selectedIndex) ?? "Unkown"
-        //client.trainModel(selectedTitle)
+        
+        print("Train BTN: model sel = \(selectedTitle)")
+        
         if let dsid = client.getLabel(byName: currentObjectSelected)?.dsid {
             print("VC-trainModel selected: dsid = \(dsid)")
             client.trainModel(dsid: dsid, model_t: selectedTitle)
@@ -365,7 +367,9 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, UITextFiel
     @IBAction func predictModel(_ sender: Any) {
         let selectedIndex = modelSelector.selectedSegmentIndex
         let selectedTitle = modelSelector.titleForSegment(at: selectedIndex) ?? "Unkown"
-        //client.predictModel()
+        
+        print("predictModel BTN: model sel = \(selectedTitle)")
+        
         if let dsid = client.getLabel(byName: currentObjectSelected)?.dsid {
             print("VC-tpredictModel selected: dsid = \(dsid)")
             client.predict(image: currentResizedImage, dsid: dsid, model_t: selectedTitle)
