@@ -13,6 +13,9 @@
 		B67483E01ACA2D6800A9970E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B67483DE1ACA2D6800A9970E /* Main.storyboard */; };
 		B67483E21ACA2D6800A9970E /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B67483E11ACA2D6800A9970E /* Images.xcassets */; };
 		B694B01A1FA377E4009A4277 /* RingBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B694B0191FA377E4009A4277 /* RingBuffer.swift */; };
+		FB27E5722CF55E9800558096 /* MLClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB27E5712CF55E8D00558096 /* MLClient.swift */; };
+		FB27E5742CF55ECA00558096 /* Dataset.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB27E5732CF55ECA00558096 /* Dataset.swift */; };
+		FB27E5762CF55ED400558096 /* MultipartRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB27E5752CF55ED400558096 /* MultipartRequest.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +27,9 @@
 		B67483DF1ACA2D6800A9970E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		B67483E11ACA2D6800A9970E /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		B694B0191FA377E4009A4277 /* RingBuffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingBuffer.swift; sourceTree = "<group>"; };
+		FB27E5712CF55E8D00558096 /* MLClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MLClient.swift; sourceTree = "<group>"; };
+		FB27E5732CF55ECA00558096 /* Dataset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dataset.swift; sourceTree = "<group>"; };
+		FB27E5752CF55ED400558096 /* MultipartRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipartRequest.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,8 +62,11 @@
 		B67483D71ACA2D6800A9970E /* HTTPSwiftExample */ = {
 			isa = PBXGroup;
 			children = (
+				FB27E5712CF55E8D00558096 /* MLClient.swift */,
 				B67483DA1ACA2D6800A9970E /* AppDelegate.swift */,
 				B67483DC1ACA2D6800A9970E /* ViewController.swift */,
+				FB27E5732CF55ECA00558096 /* Dataset.swift */,
+				FB27E5752CF55ED400558096 /* MultipartRequest.swift */,
 				B6022E662C108DB400E2CC70 /* MlaasModel.swift */,
 				B694B0191FA377E4009A4277 /* RingBuffer.swift */,
 				B67483DE1ACA2D6800A9970E /* Main.storyboard */,
@@ -147,10 +156,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FB27E5742CF55ECA00558096 /* Dataset.swift in Sources */,
 				B67483DD1ACA2D6800A9970E /* ViewController.swift in Sources */,
 				B67483DB1ACA2D6800A9970E /* AppDelegate.swift in Sources */,
 				B6022E672C108DB400E2CC70 /* MlaasModel.swift in Sources */,
 				B694B01A1FA377E4009A4277 /* RingBuffer.swift in Sources */,
+				FB27E5722CF55E9800558096 /* MLClient.swift in Sources */,
+				FB27E5762CF55ED400558096 /* MultipartRequest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
