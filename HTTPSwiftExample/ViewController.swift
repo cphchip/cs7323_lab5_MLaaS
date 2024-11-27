@@ -49,7 +49,7 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, UITextFiel
 //    var isCalibrating = false
     
     // Predict or Train mode selection
-    var trainPredictMode: Bool
+    var trainPredictMode: Bool = false
 
     // User Interface properties
     @IBOutlet weak var capturedImageView: UIImageView!
@@ -61,6 +61,7 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, UITextFiel
     @IBOutlet weak var objDetectPullDown: UIButton!
     @IBOutlet weak var newObjToDetect: UITextField!
     @IBOutlet weak var modelSelector: UISegmentedControl!
+    @IBOutlet weak var trainPredictSegControl: UISegmentedControl!
     
     // MARK: Class Properties with Observers
     enum CalibrationStage:String {
