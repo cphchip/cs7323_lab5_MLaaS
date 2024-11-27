@@ -378,6 +378,12 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate,
         }
     }
 
+    @IBAction func objSelectionChange(_ sender: Any) {
+        imageCountLabel.text = "0 / 5"
+        imageCount = 0
+    }
+    
+    
     @IBAction func uploadImageClicked(_ sender: Any) {
 
         if trainMode {

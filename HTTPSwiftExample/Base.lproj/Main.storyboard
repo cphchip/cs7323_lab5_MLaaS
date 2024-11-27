@@ -84,6 +84,9 @@
                                         </menu>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="filled" title="Object menu"/>
+                                        <connections>
+                                            <action selector="objSelectionChange:" destination="RtX-8b-nDc" eventType="valueChanged" id="af0-vM-zmv"/>
+                                        </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hnx-72-uCy">
                                         <rect key="frame" x="314" y="98.666666666666686" width="80" height="60"/>
