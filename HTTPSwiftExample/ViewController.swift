@@ -368,6 +368,8 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, UITextFiel
             selectedTitle = "Unknown"
         }
         
+        modelFeedbackLabel.text = "Training!"
+
         print("Train BTN: model sel = \(selectedTitle)")
         sleep(2)
         
@@ -392,6 +394,8 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, UITextFiel
         default:
             selectedTitle = "Unknown"
         }
+        
+        modelFeedbackLabel.text = "Predicting!"
         
         print("predictModel BTN: model sel = \(selectedTitle)")
         sleep(2)
@@ -431,10 +435,20 @@ extension ViewController: MLClientProtocol {
 
     func modelTrainingComplete(result: [String: Any]?, error: APIError?) {
         print("Model training complete: \(result)")
+        if let result = result {
+            modelFeedbackLabel.text = String(describing: result)
+        } else {
+            modelFeedbackLabel.text = "No result"
+        }
     }
 
     func predictionComplete(result: [String: Any]?, error: APIError?) {
         print("Prediction complete: \(result)")
+        if let result = result {
+            modelFeedbackLabel.text = String(describing: result)
+        } else {
+            modelFeedbackLabel.text = "No result"
+        }
     }
 }
 
