@@ -102,6 +102,17 @@
                                             <action selector="makeModel:" destination="RtX-8b-nDc" eventType="touchUpInside" id="6Dg-fv-Fa8"/>
                                         </connections>
                                     </button>
+                                    <segmentedControl opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="1Tg-Qr-uwH">
+                                        <rect key="frame" x="138" y="183" width="127" height="32"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <segments>
+                                            <segment title="Train"/>
+                                            <segment title="Predict"/>
+                                        </segments>
+                                        <connections>
+                                            <action selector="trainPredictSeg:" destination="RtX-8b-nDc" eventType="valueChanged" id="mPj-oR-OA3"/>
+                                        </connections>
+                                    </segmentedControl>
                                 </subviews>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <constraints>
@@ -227,7 +238,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="cbn-1t-Ir5" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1132.5" y="261.97183098591552"/>
+            <point key="canvasLocation" x="1131.3432835820895" y="261.55606407322654"/>
         </scene>
     </scenes>
     <resources>
@@ -235,7 +246,7 @@
             <color white="1" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="linkColor">
-            <color red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

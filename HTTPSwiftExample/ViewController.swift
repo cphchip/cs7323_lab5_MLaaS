@@ -46,7 +46,10 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, UITextFiel
     var currentResizedImage: UIImage!
 
     // state variables
-    var isCalibrating = false
+//    var isCalibrating = false
+    
+    // Predict or Train mode selection
+    var trainPredictMode: Bool
 
     // User Interface properties
     @IBOutlet weak var capturedImageView: UIImageView!
@@ -162,6 +165,9 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, UITextFiel
           newObjToDetect.resignFirstResponder()
       }
     
+    @IBAction func uploadPulldown(_ sender: Any) {
+        
+    }
     @IBAction func modelSelectValueChanged(_ sender: UISegmentedControl) {
         // Retrieve the selected index
         let selectedIndex = sender.selectedSegmentIndex
@@ -275,6 +281,12 @@ class ViewController: UIViewController,AVCapturePhotoCaptureDelegate, UITextFiel
         return true
     }
 
+    
+    @IBAction func trainPredictSeg(_ sender: Any) {
+        let selectedIndex =  trainPredictSeg.selectedSegmentIndex
+        
+    }
+    
     
     @IBAction func startStopCameraOps(_ sender: Any) {
         if isCameraRunning {   // If Camera is active, stop camera and restore UI
