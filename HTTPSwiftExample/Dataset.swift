@@ -21,6 +21,7 @@ enum APIError: Error, LocalizedError {
     case datasetDoesNotExist(Int)
     case maximumRetriesExceeded
     case taskFailed(String)
+    case labelsRequestInProgress
     
     var errorDescription: String? {
         switch self {
@@ -42,6 +43,8 @@ enum APIError: Error, LocalizedError {
             return "Maximum number of retries exceeded"
         case .taskFailed(let message):
             return "Task failed: \(message)"
+        case .labelsRequestInProgress:
+            return "A labels request is already in progress."
         }
     
     }

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23094" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" colorMatched="YES" initialViewController="RtX-8b-nDc">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23504" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" colorMatched="YES" initialViewController="RtX-8b-nDc">
     <device id="retina6_3" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23084"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23506"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="UIMenu" message="Requires Xcode 11 or later." minToolsVersion="11.0" requiredIntegratedClassName="UICommandDiff"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -47,7 +47,7 @@
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="filled" title="Predict"/>
                                         <connections>
-                                            <action selector="predictModel:" destination="RtX-8b-nDc" eventType="touchUpInside" id="A75-4s-brB"/>
+                                            <action selector="uploadImageClicked:" destination="RtX-8b-nDc" eventType="touchUpInside" id="A75-4s-brB"/>
                                         </connections>
                                     </button>
                                     <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="w1a-oL-f12">
@@ -99,7 +99,7 @@
                                             <fontDescription key="titleFontDescription" type="system" pointSize="17"/>
                                         </buttonConfiguration>
                                         <connections>
-                                            <action selector="makeModel:" destination="RtX-8b-nDc" eventType="touchUpInside" id="6Dg-fv-Fa8"/>
+                                            <action selector="trainButtonClicked:" destination="RtX-8b-nDc" eventType="touchUpInside" id="6Dg-fv-Fa8"/>
                                         </connections>
                                     </button>
                                     <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="1Tg-Qr-uwH">
@@ -229,9 +229,9 @@
                         <outlet property="StartStopCamera" destination="Q83-th-e1u" id="F7x-p8-O90"/>
                         <outlet property="cameraFeedView" destination="PY3-7Z-mBZ" id="K8W-fw-hiJ"/>
                         <outlet property="capturedImageView" destination="kmq-xo-TVW" id="usg-Pm-TZH"/>
+                        <outlet property="feedbackLabel" destination="ztQ-UA-jCu" id="Fu0-Gg-2zp"/>
                         <outlet property="imageCountLabel" destination="gqI-fg-yDm" id="5js-zF-dpn"/>
                         <outlet property="imgCaptureButton" destination="Vbq-k7-yWj" id="Cj7-Tc-AJe"/>
-                        <outlet property="modelFeedbackLabel" destination="ztQ-UA-jCu" id="Fu0-Gg-2zp"/>
                         <outlet property="modelSelector" destination="N9b-C0-gdn" id="QO2-5D-qwL"/>
                         <outlet property="newObjToDetect" destination="w1a-oL-f12" id="adS-FD-CUR"/>
                         <outlet property="objDetectPullDown" destination="344-9E-JvP" id="ILy-Ns-jW1"/>
@@ -248,7 +248,7 @@
             <color white="1" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="linkColor">
-            <color red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

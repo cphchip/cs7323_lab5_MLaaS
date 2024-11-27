@@ -17,16 +17,24 @@ protocol MLClientProtocol {
 }
 
 class MLClient {
-    
-    private let API_BASE_ENDPOINT = "http://45.33.24.52:8000"
-    
-    private let API_TOKEN = Bundle.main.object(forInfoDictionaryKey: "API_TOKEN") as? String ?? ""
-    public var delegate: MLClientProtocol?
 
+    private let API_BASE_ENDPOINT = "http://45.33.24.52:8000"
+
+    private let API_TOKEN =
+        Bundle.main.object(forInfoDictionaryKey: "API_TOKEN") as? String ?? ""
+    public var delegate: MLClientProtocol?
+    private var fetchingLabels = false
     private var labels: [Dataset] = []
 
     // Fetch all labels
     func getLabels() -> [Dataset] {
+        if fetchingLabels {
+            var count = 0
+            while fetchingLabels && count < 10 {
+                count += 1
+                sleep(1)
+            }
+        }
         return labels
     }
 
@@ -124,18 +132,24 @@ class MLClient {
         return labels.first { $0.label == name }
     }
 
-    private func fetchLabels() async -> [Dataset] {
-        guard let url = URL(string: "\(API_BASE_ENDPOINT)/labels") else {
-            print("Invalid URL")
-            return []
+    func fetchLabels() async throws -> [Dataset] {
+        if fetchingLabels {
+            throw APIError.labelsRequestInProgress
         }
-        
+        fetchingLabels = true
+        defer { fetchingLabels = false }
+
+        guard let url = URL(string: "\(API_BASE_ENDPOINT)/labels") else {
+            throw APIError.invalidURL
+        }
+
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.addValue(API_TOKEN, forHTTPHeaderField: "x-api-token")
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         do {
-            let (data, response) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await URLSession.shared.data(
+                for: request)
             if let httpResponse = response as? HTTPURLResponse,
                 httpResponse.statusCode == 200
             {
@@ -144,20 +158,21 @@ class MLClient {
                     [Dataset].self, from: data)
                 return labels
             } else {
-                print(
-                    "Server error: \((response as? HTTPURLResponse)?.statusCode ?? 0)"
-                )
+                throw APIError.serverError(
+                    (response as? HTTPURLResponse)?.statusCode ?? -1, nil)
             }
         } catch {
-            print("Error fetching labels: \(error.localizedDescription)")
+            throw APIError.networkError(error)
         }
-        return []
     }
 
     init() {
         Task {
-            self.labels = await fetchLabels()
-
+            do {
+                self.labels = try await fetchLabels()
+            } catch {
+                print("Error fetching labels: \(error.localizedDescription)")
+            }
             DispatchQueue.main.async {
                 print("Labels: \(self.labels)")
             }
@@ -221,10 +236,10 @@ class MLClient {
             forHTTPHeaderField: "Content-Type"
         )
         request.httpBody = multipart.httpBody
-        
+
         // add api token to the request
         request.addValue(API_TOKEN, forHTTPHeaderField: "x-api-token")
-        
+
         // Send the request
         do {
             let (data, response) = try await URLSession.shared.data(
@@ -238,8 +253,10 @@ class MLClient {
                 return
             }
             completion(.failure(.noData))
+            return
         } catch {
             completion(.failure(.networkError(error)))
+            return
         }
     }
 
@@ -312,7 +329,7 @@ class MLClient {
             multipart.httpContentTypeHeadeValue,
             forHTTPHeaderField: "Content-Type")
         request.httpBody = multipart.httpBody
-        
+
         // Send the request
         do {
             let (data, response) = try await URLSession.shared.data(
