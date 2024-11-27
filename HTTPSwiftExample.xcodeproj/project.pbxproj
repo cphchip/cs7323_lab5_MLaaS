@@ -14,7 +14,6 @@
 		FB27E5722CF55E9800558096 /* MLClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB27E5712CF55E8D00558096 /* MLClient.swift */; };
 		FB27E5742CF55ECA00558096 /* Dataset.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB27E5732CF55ECA00558096 /* Dataset.swift */; };
 		FB27E5762CF55ED400558096 /* MultipartRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB27E5752CF55ED400558096 /* MultipartRequest.swift */; };
-		FB27E5782CF56D2000558096 /* demo_vc.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB27E5772CF56D1400558096 /* demo_vc.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,7 +26,6 @@
 		FB27E5712CF55E8D00558096 /* MLClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MLClient.swift; sourceTree = "<group>"; };
 		FB27E5732CF55ECA00558096 /* Dataset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dataset.swift; sourceTree = "<group>"; };
 		FB27E5752CF55ED400558096 /* MultipartRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipartRequest.swift; sourceTree = "<group>"; };
-		FB27E5772CF56D1400558096 /* demo_vc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = demo_vc.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,7 +63,6 @@
 				B67483DC1ACA2D6800A9970E /* ViewController.swift */,
 				FB27E5732CF55ECA00558096 /* Dataset.swift */,
 				FB27E5752CF55ED400558096 /* MultipartRequest.swift */,
-				FB27E5772CF56D1400558096 /* demo_vc.swift */,
 				B67483DE1ACA2D6800A9970E /* Main.storyboard */,
 				B67483E11ACA2D6800A9970E /* Images.xcassets */,
 				B67483D81ACA2D6800A9970E /* Supporting Files */,
@@ -156,7 +153,6 @@
 				FB27E5742CF55ECA00558096 /* Dataset.swift in Sources */,
 				B67483DD1ACA2D6800A9970E /* ViewController.swift in Sources */,
 				B67483DB1ACA2D6800A9970E /* AppDelegate.swift in Sources */,
-				FB27E5782CF56D2000558096 /* demo_vc.swift in Sources */,
 				FB27E5722CF55E9800558096 /* MLClient.swift in Sources */,
 				FB27E5762CF55ED400558096 /* MultipartRequest.swift in Sources */,
 			);
@@ -289,13 +285,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = SL7HQTQV6F;
+				DEVELOPMENT_TEAM = 39H8V3866P;
 				INFOPLIST_FILE = HTTPSwiftExample/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = chiph.mlaas;
+				PRODUCT_BUNDLE_IDENTIFIER = "chiph.mlaas-wilma";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 			};
@@ -306,13 +303,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = SL7HQTQV6F;
+				DEVELOPMENT_TEAM = 39H8V3866P;
 				INFOPLIST_FILE = HTTPSwiftExample/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = chiph.mlaas;
+				PRODUCT_BUNDLE_IDENTIFIER = "chiph.mlaas-wilma";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 			};
