@@ -6,11 +6,13 @@
 
 import Foundation
 
+// represents a dataset as a label and an id
 struct Dataset: Codable, Equatable {
     var dsid: Int
     var label: String
 }
 
+// error type for the api client
 enum APIError: Error, LocalizedError {
     case labelAlreadyExists
     case invalidURL
@@ -50,11 +52,14 @@ enum APIError: Error, LocalizedError {
     }
 }
 
+
+// request to train a model
 struct TrainRequest: Codable {
     var dsid: Int
     var model_t: String
 }
 
+// status of a task
 struct TaskStatus: Codable {
     var task_id: String
     var status: String
