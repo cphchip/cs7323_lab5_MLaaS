@@ -193,16 +193,6 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate,
                 //save current resized image to send to training/prediction tasks
                 currentResizedImage = UIImage(data: jpegData) ?? UIImage()  // if error, provide empty image
 
-                // Increment counter
-                imageCount += 1
-                if imageCount <= 5 {
-                    imageCountLabel.text = "\(imageCount) / 5"
-
-                    //                } else if imageCount > 5 {
-                    //                    imgCaptureButton.isEnabled = false
-                    //                    imgCaptureButton.alpha = 0.1
-                }
-
                 DispatchQueue.main.async {
                     // self.capturedImageView.image = image
                     self.capturedImageView.image = resizedImage
@@ -370,6 +360,9 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate,
         if let dsid = client.getLabel(byName: currentObjectSelected)?.dsid {
             print("VC-uploadTrainingImage selected: dsid = \(dsid)")
             client.uploadImage(image: currentResizedImage, dsid: dsid)
+            imageCount += 1
+            imageCountLabel.text = "\(imageCount) / 5"
+
         }
     }
 
@@ -425,8 +418,9 @@ extension ViewController: MLClientProtocol {
     func modelTrainingComplete(result: [String: Any]?, error: APIError?) {
         print("Model training complete: \(result)")
         if let result = result,
-           let accuracy = result["accuracy"] as? Double{
-        let accuracyFormatted = String(format: "%.2f", accuracy * 100)
+            let accuracy = result["accuracy"] as? Double
+        {
+            let accuracyFormatted = String(format: "%.2f", accuracy * 100)
             feedbackLabel.text =
                 "accuracy = \(accuracyFormatted)%"
         } else {
