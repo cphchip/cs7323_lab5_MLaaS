@@ -29,28 +29,24 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate,
     // interacting with server
     let client = MLClient()  // how we will interact with the server
 
-    // operation queues
-    //let calibrationOperationQueue = OperationQueue()
-
     // Photo capture properties
     var captureSession: AVCaptureSession!
     var photoOutput: AVCapturePhotoOutput!
     var previewLayer: AVCaptureVideoPreviewLayer!
     var isCameraRunning = false  // To track the camera state
 
-    var objDetectMenuItems: [String] = []
-    var imageCount = 0
+
+    var objDetectMenuItems: [String] = [] //pull down menu items of objects to detect in images
+    var imageCount = 0                    // count of images taken
     var currentObjectSelected = "none"
-    var currentResizedImage: UIImage!
+    var currentResizedImage: UIImage!     // current image to process
 
-    var trainMode: Bool = false
-    var selectedModel: String = "svc"
+    var trainMode: Bool = false           // training mode
+    var selectedModel: String = "svc"     // selected model
 
-    // state variables
-    //    var isCalibrating = false
 
     // Predict or Train mode selection
-    var trainPredictMode: Bool = false
+    var trainPredictMode: Bool = false    // train/predict selection
 
     // User Interface properties
     @IBOutlet weak var capturedImageView: UIImageView!
@@ -86,7 +82,6 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate,
         // Get the labels from the server
         let labelDataSets = client.getLabels()
 
-        //updateMenu(with: [])
         // Extract labels from array of DataSets - [Dataset]
         let labels = labelDataSets.map { $0.label }
         // Set up the initial menu
@@ -139,7 +134,6 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate,
         let selectedIndex = sender.selectedSegmentIndex
 
         // Get the title of the selected segment (if needed)
-        //        let selectedTitle = sender.titleForSegment(at: selectedIndex)
         let selectedTitle: String
         switch selectedIndex {
         case 0:
@@ -187,8 +181,6 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate,
             // Convert UIImage to JPEG data
             if let jpegData = resizedImage?.jpegData(compressionQuality: 1.0)
             {  // Compression quality: 1.0 = maximum quality
-                // Save JPEG data to disk or use it as needed
-                //saveJPEGToDisk(data: jpegData)
 
                 //save current resized image to send to training/prediction tasks
                 currentResizedImage = UIImage(data: jpegData) ?? UIImage()  // if error, provide empty image
@@ -396,13 +388,13 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate,
 
 }
 
-//MARK: Protocol Required Functions
+//MARK: MLClient Protocol Required Functions
 extension ViewController: MLClientProtocol {
-
+    // function to print the labels fetched
     func didFetchLabels(labels: [Dataset]) {
         print(labels)
     }
-
+    // function to print the label added
     func labelAdded(label: Dataset?, error: APIError?) {
         if let error = error {
             print(error.localizedDescription)
@@ -410,7 +402,7 @@ extension ViewController: MLClientProtocol {
             print("Label added: \(label?.label ?? "")")
         }
     }
-
+    // function to indicate whether the image was uploaded successfully
     func uploadImageComplete(success: Bool, errMsg: String?) {
         if success {
             print("Image uploaded successfully")
@@ -420,7 +412,8 @@ extension ViewController: MLClientProtocol {
             feedbackLabel.text = "upload failed"
         }
     }
-
+    
+    // function to indicate model training complete
     func modelTrainingComplete(result: [String: Any]?, error: APIError?) {
         print("Model training complete: \(result)")
         if let result = result,
@@ -433,7 +426,7 @@ extension ViewController: MLClientProtocol {
             feedbackLabel.text = "No result"
         }
     }
-
+    // function to indicate model prediction complete
     func predictionComplete(result: [String: Any]?, error: APIError?) {
         print("Prediction complete: \(result)")
         if let result = result,
